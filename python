@@ -1,0 +1,277 @@
+"""
+Quiz Bíblico - Backend skeleton
+Technologies: Flask + Flask-SocketIO
+Single-file prototype server that:
+ - serves questions for solo and multiplayer
+ - manages simple in-memory players and rooms
+ - awards figurinhas (stickers) with configured probabilities
+ - provides endpoints for ranking and album
+
+Notes:
+ - This is a prototype for local/dev use. For production, migrate to a proper DB and add auth.
+ - To run: pip install flask flask-socketio eventlet
+   then: python quiz_biblico_backend.py
+
+"""
+
+from flask import Flask, request, jsonify
+from flask_socketio import SocketIO, join_room, leave_room, emit
+import random
+import time
+import json
+import uuid
+from collections import defaultdict
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'dev-secret'
+socketio = SocketIO(app, cors_allowed_origins='*')
+
+# ---------------------- Sample Questions ----------------------
+# Fallback questions if external JSON not provided
+SAMPLE_QUESTIONS = {
+    "facil": [
+        {"id": "f1", "pergunta": "Quem construiu a arca?", "opcoes": ["Moisés", "Noé", "Abraão"], "resposta": "Noé"},
+        {"id": "f2", "pergunta": "Qual é o primeiro livro da Bíblia?", "opcoes": ["Gênesis", "Êxodo", "Salmos"], "resposta": "Gênesis"}
+    ],
+    "medio": [
+        {"id": "m1", "pergunta": "Quem interpretou os sonhos do Faraó no Egito?", "opcoes": ["Daniel", "José", "Moisés"], "resposta": "José"}
+    ],
+    "dificil": [
+        {"id": "d1", "pergunta": "Complete: 'Porque Deus amou o mundo de tal maneira que deu o seu ...'", "opcoes": ["Filho", "Louvor", "Dom"], "resposta": "Filho"}
+    ]
+}
+
+# Try to load questions from questions.json if present
+try:
+    with open('questions.json', 'r', encoding='utf-8') as f:
+        QUESTIONS = json.load(f)
+        print('Loaded questions.json')
+except Exception as e:
+    print('questions.json not found or failed to load, using SAMPLE_QUESTIONS')
+    QUESTIONS = SAMPLE_QUESTIONS
+
+LEVEL_POINTS = {"facil": 10, "medio": 20, "dificil": 30}
+STICKER_PROBS = {"comum": 0.70, "rara": 0.25, "lendaria": 0.05}
+
+# ---------------------- In-memory State ----------------------
+# players: store player info (pontuacao, figurinhas)
+players = defaultdict(lambda: {"pontuacao": 0, "figurinhas": []})
+
+# solo_sessions: per-player queue of question ids for the selected level
+solo_sessions = {}
+
+# rooms: room_id -> {players: set(names), question_queue: list, scores: dict}
+rooms = {}
+
+# global ranking computed from players dict
+
+# utility: shuffle questions per level
+def make_question_deck(level):
+    deck = QUESTIONS.get(level, [])[:]
+    random.shuffle(deck)
+    return deck
+
+# utility: pick sticker category by probability
+def draw_sticker():
+    r = random.random()
+    cumulative = 0.0
+    for cat, prob in STICKER_PROBS.items():
+        cumulative += prob
+        if r <= cumulative:
+            # create a simple sticker object
+            sticker = {"id": str(uuid.uuid4()), "nome": f"Figurinha {cat.capitalize()}", "categoria": cat}
+            return sticker
+    # fallback
+    return {"id": str(uuid.uuid4()), "nome": "Figurinha Comum", "categoria": "comum"}
+
+# ---------------------- API Endpoints (Solo) ----------------------
+@app.route('/start_solo', methods=['POST'])
+def start_solo():
+    data = request.get_json() or {}
+    player = data.get('player')
+    level = data.get('level', 'facil')
+    if not player:
+        return jsonify({"error": "player required"}), 400
+
+    deck = make_question_deck(level)
+    solo_sessions[player] = {"deck": deck, "level": level, "index": 0}
+    # ensure player exists
+    _ = players[player]
+    # return first question
+    if deck:
+        q = deck[0].copy()
+        # don't expose answer
+        q.pop('resposta', None)
+        return jsonify({"question": q})
+    else:
+        return jsonify({"message": "no questions for level"}), 404
+
+@app.route('/answer_solo', methods=['POST'])
+def answer_solo():
+    data = request.get_json() or {}
+    player = data.get('player')
+    answer = data.get('answer')
+    if not player or 'answer' not in data:
+        return jsonify({"error": "player and answer required"}), 400
+
+    session = solo_sessions.get(player)
+    if not session:
+        return jsonify({"error": "no solo session; call /start_solo first"}), 400
+
+    idx = session['index']
+    deck = session['deck']
+    if idx >= len(deck):
+        return jsonify({"finished": True, "message": "No more questions"})
+
+    q = deck[idx]
+    correct = (answer == q.get('resposta'))
+    points = LEVEL_POINTS.get(session['level'], 0) if correct else 0
+
+    if correct:
+        players[player]['pontuacao'] += points
+        # sticker chance: on correct, 100% chance to attempt draw
+        sticker = draw_sticker()
+        players[player]['figurinhas'].append(sticker)
+    else:
+        sticker = None
+
+    session['index'] += 1
+    next_q = None
+    if session['index'] < len(deck):
+        next_q = deck[session['index']].copy()
+        next_q.pop('resposta', None)
+
+    return jsonify({
+        "correct": correct,
+        "points_awarded": points,
+        "sticker": sticker,
+        "next_question": next_q,
+        "pontuacao_total": players[player]['pontuacao']
+    })
+
+@app.route('/ranking', methods=['GET'])
+def ranking():
+    # return top 50 players sorted by pontuacao
+    limit = int(request.args.get('limit', 50))
+    ranked = sorted(players.items(), key=lambda kv: kv[1]['pontuacao'], reverse=True)
+    serialized = [{"player": name, "pontuacao": data['pontuacao']} for name, data in ranked[:limit]]
+    return jsonify({"ranking": serialized})
+
+@app.route('/album/<player>', methods=['GET'])
+def get_album(player):
+    p = players.get(player)
+    if not p:
+        return jsonify({"error": "player not found"}), 404
+    return jsonify({"figurinhas": p['figurinhas']})
+
+# ---------------------- Multiplayer (Socket.IO) ----------------------
+@socketio.on('create_room')
+def handle_create_room(data):
+    player = data.get('player')
+    level = data.get('level', 'facil')
+    if not player:
+        emit('error', {"message": "player required"})
+        return
+    room_id = str(uuid.uuid4())[:8]
+    rooms[room_id] = {
+        "players": set([player]),
+        "scores": {player: 0},
+        "level": level,
+        "deck": make_question_deck(level),
+        "index": 0
+    }
+    join_room(room_id)
+    emit('room_created', {"room_id": room_id, "players": list(rooms[room_id]['players'])})
+
+@socketio.on('join_room')
+def handle_join_room(data):
+    player = data.get('player')
+    room_id = data.get('room_id')
+    if not player or not room_id:
+        emit('error', {"message": "player and room_id required"})
+        return
+    room = rooms.get(room_id)
+    if not room:
+        emit('error', {"message": "room not found"})
+        return
+    if len(room['players']) >= 15:
+        emit('error', {"message": "room full"})
+        return
+    room['players'].add(player)
+    room['scores'][player] = 0
+    join_room(room_id)
+    emit('player_joined', {"room_id": room_id, "player": player, "players": list(room['players'])}, room=room_id)
+
+@socketio.on('start_game')
+def handle_start_game(data):
+    room_id = data.get('room_id')
+    room = rooms.get(room_id)
+    if not room:
+        emit('error', {"message": "room not found"})
+        return
+    # broadcast first question
+    if room['index'] < len(room['deck']):
+        q = room['deck'][room['index']].copy()
+        q.pop('resposta', None)
+        emit('question', {"question": q, "index": room['index']}, room=room_id)
+    else:
+        emit('game_over', {"message": "no questions in room deck"}, room=room_id)
+
+@socketio.on('answer')
+def handle_answer(data):
+    room_id = data.get('room_id')
+    player = data.get('player')
+    answer = data.get('answer')
+    room = rooms.get(room_id)
+    if not room or not player:
+        emit('error', {"message": "room/player required"})
+        return
+    idx = room['index']
+    if idx >= len(room['deck']):
+        emit('error', {"message": "no active question"})
+        return
+    q = room['deck'][idx]
+    correct = (answer == q.get('resposta'))
+    points = LEVEL_POINTS.get(room['level'], 0) if correct else 0
+    if correct:
+        room['scores'][player] = room['scores'].get(player, 0) + points
+        players[player]['pontuacao'] += points
+        sticker = draw_sticker()
+        players[player]['figurinhas'].append(sticker)
+    else:
+        sticker = None
+
+    # notify player of result
+    emit('answer_result', {"player": player, "correct": correct, "points": points, "sticker": sticker}, room=room_id)
+
+    # Check if all players answered this question: for simplicity we'll advance immediately
+    # In a production system you'd aggregate responses per-question and advance when all answered or timer expires
+    room['index'] += 1
+    if room['index'] < len(room['deck']):
+        next_q = room['deck'][room['index']].copy()
+        next_q.pop('resposta', None)
+        emit('question', {"question": next_q, "index": room['index']}, room=room_id)
+    else:
+        # game over -> send final scores
+        emit('game_over', {"scores": room['scores']}, room=room_id)
+
+@socketio.on('leave_room')
+def handle_leave_room(data):
+    player = data.get('player')
+    room_id = data.get('room_id')
+    room = rooms.get(room_id)
+    if room and player in room['players']:
+        room['players'].remove(player)
+        room['scores'].pop(player, None)
+        leave_room(room_id)
+        emit('player_left', {"player": player, "players": list(room['players'])}, room=room_id)
+
+# ---------------------- Helper route for health ----------------------
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok", "rooms": len(rooms), "players": len(players)})
+
+# ---------------------- Run ----------------------
+if __name__ == '__main__':
+    print('Starting Quiz Bíblico backend (Flask + SocketIO)')
+    socketio.run(app, host='0.0.0.0', port=5000)
