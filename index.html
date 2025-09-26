@@ -3,20 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Bíblico Multiplayer - Sala Corrigida</title>
+    <title>Quiz Bíblico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --azul-vibrante: #4A90E2;
+            --roxo: #8E44AD;
+            --dourado: #F1C40F;
+            --branco: #FFFFFF;
+            --cinza-claro: #F5F5F5;
+            --cinza-escuro: #333333;
+            --verde: #2ECC71;
+            --vermelho: #E74C3C;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--roxo);
+            color: var(--branco);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             padding: 20px;
         }
@@ -24,1267 +37,989 @@
         .container {
             width: 100%;
             max-width: 1200px;
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 90vh;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
-        header {
-            background-color: #4a00e0;
-            color: white;
-            padding: 20px;
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
             text-align: center;
-            flex-shrink: 0;
+            margin-bottom: 20px;
         }
         
         h1 {
             font-size: 2.5rem;
-            margin-bottom: 10px;
+            color: var(--dourado);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        button {
+            background-color: var(--azul-vibrante);
+            color: var(--branco);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Roboto', sans-serif;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background-color: #3a7bc8;
         }
         
-        .screen {
-            padding: 30px;
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .tela {
             display: none;
-            flex: 1;
-            overflow-y: auto;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
         }
         
-        .active {
-            display: block;
+        .tela.ativa {
+            display: flex;
         }
         
-        #start-screen {
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .menu-opcoes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .menu-opcoes button {
+            min-width: 200px;
+            height: 80px;
+            font-size: 1.3rem;
+        }
+        
+        .pergunta-container {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .pergunta-texto {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
             text-align: center;
         }
         
-        #start-screen p {
-            margin: 20px 0;
-            font-size: 1.1rem;
-            line-height: 1.6;
+        .opcoes-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
         }
         
-        .btn {
-            background-color: #4a00e0;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            border-radius: 50px;
+        @media (min-width: 768px) {
+            .opcoes-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .opcao {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 15px;
             cursor: pointer;
-            transition: all 0.3s;
-            margin: 10px;
+            transition: all 0.2s ease;
+            text-align: center;
         }
         
-        .btn:hover {
-            background-color: #3600a3;
-            transform: translateY(-2px);
+        .opcao:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-color: var(--azul-vibrante);
         }
         
-        .btn-secondary {
-            background-color: #8e2de2;
+        .opcao.selecionada {
+            background-color: var(--azul-vibrante);
+            border-color: var(--dourado);
         }
         
-        .btn-success {
-            background-color: #4CAF50;
+        .opcao.correta {
+            background-color: var(--verde);
+            border-color: var(--dourado);
         }
         
-        .btn-danger {
-            background-color: #F44336;
+        .opcao.incorreta {
+            background-color: var(--vermelho);
         }
         
-        .question-container {
-            margin-bottom: 20px;
+        .barra-progresso {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
         }
         
-        .question-number {
-            font-size: 1rem;
-            color: #666;
+        .progresso {
+            height: 100%;
+            background-color: var(--dourado);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .contador-tempo {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .resultado-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .resultado-acerto {
+            color: var(--verde);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .resultado-erro {
+            color: var(--vermelho);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .figurinha-ganha {
+            background-color: var(--dourado);
+            color: var(--cinza-escuro);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .ranking-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .ranking-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .ranking-posicao {
+            font-weight: bold;
+            color: var(--dourado);
+        }
+        
+        .album-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .figurinha-card {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .figurinha-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .figurinha-card.comum {
+            border: 2px solid var(--azul-vibrante);
+        }
+        
+        .figurinha-card.rara {
+            border: 2px solid var(--dourado);
+            animation: brilho 2s infinite;
+        }
+        
+        .figurinha-card.lendaria {
+            border: 2px solid var(--roxo);
+            animation: brilhoIntenso 1.5s infinite;
+        }
+        
+        @keyframes brilho {
+            0% { box-shadow: 0 0 5px var(--dourado); }
+            50% { box-shadow: 0 0 20px var(--dourado); }
+            100% { box-shadow: 0 0 5px var(--dourado); }
+        }
+        
+        @keyframes brilhoIntenso {
+            0% { box-shadow: 0 0 10px var(--roxo); }
+            50% { box-shadow: 0 0 30px var(--roxo); }
+            100% { box-shadow: 0 0 10px var(--roxo); }
+        }
+        
+        .figurinha-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .figurinha-nome {
+            font-weight: bold;
             margin-bottom: 5px;
         }
         
-        .question-text {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        
-        .difficulty-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
+        .figurinha-categoria {
             font-size: 0.8rem;
-            font-weight: bold;
-            margin-left: 10px;
+            opacity: 0.8;
         }
         
-        .difficulty-facil {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .difficulty-medio {
-            background-color: #FF9800;
-            color: white;
-        }
-        
-        .difficulty-dificil {
-            background-color: #F44336;
-            color: white;
-        }
-        
-        .difficulty-expert {
-            background-color: #9C27B0;
-            color: white;
-        }
-        
-        .difficulty-mestre {
-            background-color: #607D8B;
-            color: white;
-        }
-        
-        .options-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .option {
-            background-color: #f5f5f5;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .option:hover {
-            background-color: #e9e9e9;
-            transform: scale(1.02);
-        }
-        
-        .option.correct {
-            background-color: #4CAF50;
-            color: white;
-            border-color: #4CAF50;
-        }
-        
-        .option.wrong {
-            background-color: #F44336;
-            color: white;
-            border-color: #F44336;
-        }
-        
-        .timer-container {
-            height: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        .timer-bar {
-            height: 100%;
-            background-color: #4a00e0;
-            width: 100%;
-            transition: width 1s linear;
-        }
-        
-        .score-container {
-            text-align: center;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-        
-        #result-screen {
-            text-align: center;
-        }
-        
-        .result-title {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #4a00e0;
-        }
-        
-        .score-display {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #4a00e0;
-            margin: 20px 0;
-        }
-        
-        .feedback {
-            font-size: 1.3rem;
-            margin: 20px 0;
-        }
-        
-        .player-name {
-            padding: 10px;
-            font-size: 1.1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 300px;
-            margin: 10px 0;
-        }
-        
-        .players-panel {
-            width: 300px;
-            background-color: #f9f9f9;
-            border-left: 1px solid #e0e0e0;
-            padding: 20px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        
-        .players-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #4a00e0;
-            text-align: center;
-        }
-        
-        .players-list {
-            list-style-type: none;
-        }
-        
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .player-name-display {
-            font-weight: bold;
-        }
-        
-        .player-score {
-            color: #4a00e0;
-            font-weight: bold;
-        }
-        
-        .player-level {
-            font-size: 0.8rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background-color: #e0e0e0;
-        }
-        
-        .room-code {
-            background-color: #f0f0f0;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            letter-spacing: 5px;
-            margin: 20px 0;
-            display: inline-block;
-        }
-        
-        .instructions {
-            background-color: #f0f8ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        
-        .instructions h3 {
-            margin-bottom: 10px;
-            color: #4a00e0;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 8px;
-        }
-        
-        .leaderboard {
+        .sala-container {
             width: 100%;
             max-width: 600px;
-            margin: 20px auto;
+            margin: 20px 0;
         }
         
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
+        .sala-info {
+            background-color: rgba(255, 255, 255, 0.1);
             padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
         
-        .leaderboard-position {
-            font-weight: bold;
-            width: 40px;
+        .jogadores-sala {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
         }
         
-        .leaderboard-name {
-            flex: 1;
-            text-align: left;
-            padding-left: 20px;
+        .jogador-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
         }
         
-        .leaderboard-score {
-            font-weight: bold;
-            color: #4a00e0;
-        }
-        
-        .level-info {
+        .filtro-categorias {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             margin: 20px 0;
             flex-wrap: wrap;
         }
         
-        .level-card {
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px;
-            width: 180px;
+        .filtro-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 5px;
+        }
+        
+        .filtro-btn.ativo {
+            background-color: var(--azul-vibrante);
+        }
+        
+        .vazia {
             text-align: center;
+            padding: 30px;
+            opacity: 0.7;
         }
         
-        .level-title {
-            font-weight: bold;
-            margin-bottom: 10px;
+        .voltar-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
         }
         
-        .level-points {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .error-message {
-            color: #F44336;
-            margin: 10px 0;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #ffebee;
-            border-radius: 5px;
-            border: 1px solid #f44336;
-        }
-        
-        .success-message {
-            color: #4CAF50;
-            margin: 10px 0;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #e8f5e8;
-            border-radius: 5px;
-            border: 1px solid #4CAF50;
-        }
-
-        .player-count {
-            font-size: 0.9rem;
-            color: #666;
-            margin: 10px 0;
-        }
-
-        @media (max-width: 900px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .players-panel {
-                width: 100%;
-                border-left: none;
-                border-top: 1px solid #e0e0e0;
-                max-height: 200px;
-            }
-            
+        @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
             }
             
-            .level-info {
-                justify-content: center;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .options-container {
-                grid-template-columns: 1fr;
+            button {
+                padding: 10px 20px;
+                font-size: 1rem;
             }
             
-            .container {
-                height: auto;
-                min-height: 90vh;
+            .menu-opcoes button {
+                min-width: 150px;
+                height: 70px;
+                font-size: 1.1rem;
             }
             
-            .level-card {
-                width: 100%;
-                max-width: 250px;
+            .pergunta-texto {
+                font-size: 1.2rem;
+            }
+            
+            .album-container {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Quiz Bíblico Multiplayer</h1>
-            <div class="subtitle">Máximo de 10 jogadores por sala - Problema corrigido!</div>
-        </header>
+        <!-- Tela Inicial -->
+        <div id="tela-inicial" class="tela ativa">
+            <h1>Quiz Bíblico</h1>
+            <p>Teste seu conhecimento bíblico, coleciona figurinhas e divirta-se!</p>
+            
+            <div class="menu-opcoes">
+                <button id="btn-solo">Modo Solo</button>
+                <button id="btn-multiplayer">Modo Multiplayer</button>
+                <button id="btn-ranking">Ranking Global</button>
+                <button id="btn-album">Álbum de Figurinhas</button>
+            </div>
+        </div>
         
-        <div class="main-content">
-            <div id="start-screen" class="screen active">
-                <h2>Bem-vindo ao Quiz Bíblico Multiplayer!</h2>
-                <p>Jogue com seus amigos em tempo real. Máximo de 10 jogadores por sala.</p>
-                
-                <div class="instructions">
-                    <h3>Como entrar em uma sala:</h3>
-                    <ol>
-                        <li><strong>Anfitrião</strong>: Clique em "Criar Sala" e compartilhe o código</li>
-                        <li><strong>Jogadores</strong>: Clique em "Entrar em uma Sala" e digite o código</li>
-                        <li><strong>Nome</strong>: Digite seu nome antes de entrar</li>
-                        <li><strong>Código</strong>: Use 4 letras maiúsculas (ex: ABCD)</li>
-                    </ol>
-                    <p class="player-count">💡 <strong>Máximo de 10 jogadores por sala</strong></p>
-                </div>
-                
-                <button class="btn" id="host-btn">Criar Sala (Anfitrião)</button>
-                <button class="btn btn-secondary" id="join-btn">Entrar em uma Sala</button>
+        <!-- Tela de Seleção de Dificuldade (Solo) -->
+        <div id="tela-dificuldade" class="tela">
+            <h2>Escolha a Dificuldade</h2>
+            <div class="menu-opcoes">
+                <button class="dificuldade-btn" data-dificuldade="facil">Fácil</button>
+                <button class="dificuldade-btn" data-dificuldade="medio">Médio</button>
+                <button class="dificuldade-btn" data-dificuldade="dificil">Difícil</button>
+            </div>
+            <button class="voltar-btn">Voltar</button>
+        </div>
+        
+        <!-- Tela de Pergunta (Solo) -->
+        <div id="tela-pergunta" class="tela">
+            <h2>Modo Solo</h2>
+            <div class="contador-tempo">Tempo: <span id="tempo-restante">30</span>s</div>
+            <div class="barra-progresso">
+                <div class="progresso" id="barra-progresso"></div>
             </div>
             
-            <div id="host-screen" class="screen">
-                <h2>Criar Sala de Jogo</h2>
-                <div class="instructions">
-                    <p>Digite seu nome e clique em "Criar Sala". Compartilhe o código com os jogadores.</p>
-                    <p class="player-count">🎯 <strong>Máximo de 10 jogadores por sala</strong></p>
-                </div>
-                <input type="text" class="player-name" id="host-name" placeholder="Seu nome como anfitrião" maxlength="15">
-                <br>
-                <button class="btn" id="create-room-btn">Criar Sala</button>
-                <button class="btn btn-danger" id="back-host-btn">Voltar</button>
-                
-                <div id="room-created" style="display: none; text-align: center;">
-                    <div class="success-message">✅ Sala criada com sucesso!</div>
-                    <div class="room-code" id="room-code-display">ABCD</div>
-                    <p>Compartilhe este código com os jogadores!</p>
-                    <p class="player-count">👥 Jogadores na sala: <span id="current-player-count">1</span>/10</p>
-                    
-                    <div class="instructions">
-                        <h3>Jogadores na sala:</h3>
-                        <ul class="players-list" id="host-players-list">
-                            <!-- Lista de jogadores será inserida aqui -->
-                        </ul>
-                    </div>
-                    
-                    <button class="btn" id="start-game-btn" disabled>Iniciar Jogo (mínimo 2 jogadores)</button>
+            <div class="pergunta-container">
+                <div class="pergunta-texto" id="texto-pergunta">Carregando pergunta...</div>
+                <div class="opcoes-container" id="opcoes-container">
+                    <!-- Opções serão inseridas dinamicamente -->
                 </div>
             </div>
             
-            <div id="join-screen" class="screen">
-                <h2>Entrar em uma Sala</h2>
-                <div class="instructions">
-                    <p>Digite seu nome e o código da sala fornecida pelo anfitrião.</p>
-                    <p class="player-count">🎯 <strong>Máximo de 10 jogadores por sala</strong></p>
+            <button id="btn-confirmar" disabled>Confirmar Resposta</button>
+        </div>
+        
+        <!-- Tela de Resultado (Solo) -->
+        <div id="tela-resultado" class="tela">
+            <h2>Resultado</h2>
+            <div class="resultado-container">
+                <div id="resultado-texto" class="resultado-acerto">Resposta Correta!</div>
+                <div id="figurinha-ganha-container" class="figurinha-ganha" style="display: none;">
+                    <h3>Nova Figurinha!</h3>
+                    <div id="figurinha-ganha-info"></div>
                 </div>
-                <input type="text" class="player-name" id="player-name-input" placeholder="Seu nome" maxlength="15">
-                <br>
-                <input type="text" class="player-name" id="room-code-input" placeholder="Código da sala (ex: ABCD)" maxlength="4" style="text-transform: uppercase;">
-                <br>
-                <button class="btn" id="join-room-btn">Entrar na Sala</button>
-                <button class="btn btn-danger" id="back-join-btn">Voltar</button>
-                
-                <div id="error-message" class="error-message" style="display: none;"></div>
-                
-                <div id="joined-room" style="display: none; text-align: center;">
-                    <div class="success-message">✅ Você entrou na sala com sucesso!</div>
-                    <p>Aguardando o anfitrião iniciar o jogo...</p>
-                    <p class="player-count">👥 Jogadores na sala: <span id="join-player-count">1</span>/10</p>
-                    
-                    <div class="instructions">
-                        <h3>Jogadores na sala:</h3>
-                        <ul class="players-list" id="join-players-list">
-                            <!-- Lista de jogadores será inserida aqui -->
-                        </ul>
-                    </div>
-                    <div id="waiting-message">⏳ Aguardando anfitrião iniciar o jogo...</div>
-                </div>
+                <p>Sua pontuação: <span id="pontuacao-atual">0</span> pontos</p>
+            </div>
+            <button id="btn-proxima-pergunta">Próxima Pergunta</button>
+            <button class="voltar-btn">Voltar ao Início</button>
+        </div>
+        
+        <!-- Tela de Multiplayer -->
+        <div id="tela-multiplayer" class="tela">
+            <h2>Modo Multiplayer</h2>
+            <div class="menu-opcoes">
+                <button id="btn-criar-sala">Criar Sala</button>
+                <button id="btn-entrar-sala">Entrar em Sala</button>
+            </div>
+            <button class="voltar-btn">Voltar</button>
+        </div>
+        
+        <!-- Tela de Sala (Multiplayer) -->
+        <div id="tela-sala" class="tela">
+            <h2>Sala Multiplayer</h2>
+            <div class="sala-info">
+                <p>ID da Sala: <span id="sala-id">ABC123</span></p>
+                <p>Jogadores: <span id="contador-jogadores">1</span>/15</p>
             </div>
             
-            <div id="game-screen" class="screen">
-                <div class="score-container">
-                    Sua pontuação: <span id="score">0</span> | 
-                    Nível: <span id="current-level">1 - Iniciante</span> |
-                    Jogadores: <span id="game-player-count">1</span>/10
-                </div>
-                <div class="question-container">
-                    <div class="question-number">Pergunta <span id="current-question">1</span> de <span id="total-questions">5</span></div>
-                    <div class="question-text" id="question-text">Qual é a pergunta?</div>
-                </div>
-                <div class="timer-container">
-                    <div class="timer-bar" id="timer-bar"></div>
-                </div>
-                <div class="options-container" id="options-container">
-                    <!-- As opções serão inseridas aqui via JavaScript -->
-                </div>
+            <div class="jogadores-sala" id="jogadores-sala">
+                <!-- Jogadores serão inseridos dinamicamente -->
             </div>
             
-            <div id="result-screen" class="screen">
-                <h2 class="result-title">Fim de Jogo!</h2>
-                <div class="score-display" id="final-score">0</div>
-                <div class="feedback" id="feedback">Mensagem de feedback</div>
-                
-                <div class="leaderboard">
-                    <h3>Classificação Final</h3>
-                    <div id="leaderboard-container">
-                        <!-- A classificação será inserida aqui -->
-                    </div>
-                </div>
-                
-                <button class="btn" id="back-to-lobby-btn">Voltar ao Início</button>
+            <button id="btn-iniciar-jogo" disabled>Iniciar Jogo</button>
+            <button class="voltar-btn">Sair da Sala</button>
+        </div>
+        
+        <!-- Tela de Ranking -->
+        <div id="tela-ranking" class="tela">
+            <h2>Ranking Global</h2>
+            <div class="ranking-container" id="ranking-container">
+                <!-- Itens de ranking serão inseridos dinamicamente -->
+            </div>
+            <button class="voltar-btn">Voltar</button>
+        </div>
+        
+        <!-- Tela de Álbum -->
+        <div id="tela-album" class="tela">
+            <h2>Álbum de Figurinhas</h2>
+            
+            <div class="filtro-categorias">
+                <button class="filtro-btn ativo" data-categoria="todas">Todas</button>
+                <button class="filtro-btn" data-categoria="comum">Comum</button>
+                <button class="filtro-btn" data-categoria="rara">Rara</button>
+                <button class="filtro-btn" data-categoria="lendaria">Lendária</button>
             </div>
             
-            <div class="players-panel" id="players-panel" style="display: none;">
-                <div class="players-title">Jogadores na Sala (<span id="panel-player-count">1</span>/10)</div>
-                <ul class="players-list" id="players-list">
-                    <!-- Lista de jogadores será inserida aqui -->
-                </ul>
+            <div class="album-container" id="album-container">
+                <!-- Figurinhas serão inseridas dinamicamente -->
             </div>
+            
+            <button class="voltar-btn">Voltar</button>
         </div>
     </div>
 
     <script>
-        // Sistema de níveis
-        const levels = [
-            { name: "Iniciante", minPoints: 0, maxPoints: 100, difficulty: "Fácil", color: "facil" },
-            { name: "Intermediário", minPoints: 101, maxPoints: 300, difficulty: "Médio", color: "medio" },
-            { name: "Avançado", minPoints: 301, maxPoints: 600, difficulty: "Difícil", color: "dificil" }
-        ];
-
-        // Perguntas do quiz organizadas por nível de dificuldade
-        const questionsByLevel = {
-            0: [ // Nível 1 - Iniciante
+        // Dados do jogo
+        const perguntas = {
+            "facil": [
                 {
-                    question: "Quantos discípulos Jesus escolheu?",
-                    options: ["7", "10", "12", "15"],
-                    correct: 2,
-                    explanation: "Jesus escolheu 12 discípulos para estarem com Ele e para os enviar a pregar (Marcos 3:14)."
+                    "pergunta": "Quem construiu a arca?",
+                    "opcoes": ["Moisés", "Noé", "Abraão", "Josué"],
+                    "resposta": "Noé"
                 },
                 {
-                    question: "Qual é o primeiro livro da Bíblia?",
-                    options: ["Êxodo", "Gênesis", "Mateus", "Jó"],
-                    correct: 1,
-                    explanation: "Gênesis é o primeiro livro da Bíblia, que narra a criação do mundo."
+                    "pergunta": "Quantos discípulos Jesus escolheu?",
+                    "opcoes": ["7", "12", "10", "15"],
+                    "resposta": "12"
                 },
                 {
-                    question: "Quem construiu a arca?",
-                    options: ["Moisés", "Abraão", "Noé", "Davi"],
-                    correct: 2,
-                    explanation: "Noé construiu a arca por ordem de Deus para salvar sua família e os animais do dilúvio (Gênesis 6:14)."
+                    "pergunta": "Qual foi o primeiro milagre de Jesus?",
+                    "opcoes": ["Cura do cego", "Ressurreição de Lázaro", "Transformação de água em vinho", "Caminhar sobre as águas"],
+                    "resposta": "Transformação de água em vinho"
                 },
                 {
-                    question: "Quem foi engolido por um grande peixe?",
-                    options: ["Jonas", "Pedro", "Paulo", "João"],
-                    correct: 0,
-                    explanation: "Jonas foi engolido por um grande peixe quando tentou fugir da missão que Deus lhe deu (Jonas 1:17)."
+                    "pergunta": "Quem foi jogado na cova dos leões?",
+                    "opcoes": ["José", "Davi", "Daniel", "Jonas"],
+                    "resposta": "Daniel"
                 },
                 {
-                    question: "Qual era o nome do irmão de Moisés?",
-                    options: ["Josué", "Arão", "Calebe", "Eli"],
-                    correct: 1,
-                    explanation: "Arão era o irmão mais velho de Moisés e foi seu porta-voz diante do Faraó (Êxodo 4:14)."
+                    "pergunta": "Qual é o primeiro livro da Bíblia?",
+                    "opcoes": ["Êxodo", "Gênesis", "Mateus", "Salmos"],
+                    "resposta": "Gênesis"
                 }
             ],
-            1: [ // Nível 2 - Intermediário
+            "medio": [
                 {
-                    question: "Quem foi jogado na cova dos leões por orar a Deus?",
-                    options: ["José", "Davi", "Daniel", "Jonas"],
-                    correct: 2,
-                    explanation: "Daniel foi jogado na cova dos leões por continuar orando a Deus, desobedecendo ao decreto real (Daniel 6:16)."
+                    "pergunta": "Qual apóstolo era coletor de impostos antes de seguir Jesus?",
+                    "opcoes": ["Pedro", "João", "Mateus", "André"],
+                    "resposta": "Mateus"
                 },
                 {
-                    question: "Qual foi o primeiro milagre de Jesus?",
-                    options: ["Multiplicação dos pães", "Cura do cego", "Transformação de água em vinho", "Ressurreição de Lázaro"],
-                    correct: 2,
-                    explanation: "O primeiro milagre de Jesus foi transformar água em vinho nas bodas de Caná (João 2:1-11)."
+                    "pergunta": "Quem foi o primeiro mártir da igreja cristã?",
+                    "opcoes": ["Pedro", "Paulo", "Estêvão", "Tiago"],
+                    "resposta": "Estêvão"
                 },
                 {
-                    question: "Quem negou Jesus três vezes antes do galo cantar?",
-                    options: ["Judas", "Tomé", "Pedro", "João"],
-                    correct: 2,
-                    explanation: "Pedro negou Jesus três vezes, conforme Jesus havia predito (Mateus 26:69-75)."
+                    "pergunta": "Qual profeta foi engolido por um grande peixe?",
+                    "opcoes": ["Jeremias", "Isaías", "Jonas", "Ezequiel"],
+                    "resposta": "Jonas"
+                },
+                {
+                    "pergunta": "Quem interpretou o sonho de Faraó sobre as vacas magras e gordas?",
+                    "opcoes": ["Moisés", "José", "Daniel", "Salomão"],
+                    "resposta": "José"
                 }
             ],
-            2: [ // Nível 3 - Avançado
+            "dificil": [
                 {
-                    question: "Qual destes NÃO é um livro do Novo Testamento?",
-                    options: ["Atos", "Êxodo", "Romanos", "Apocalipse"],
-                    correct: 1,
-                    explanation: "Êxodo é um livro do Antigo Testamento, que conta a saída dos israelitas do Egito."
+                    "pergunta": "Quantos anos tinha Noé quando começou a chover para o dilúvio?",
+                    "opcoes": ["500 anos", "600 anos", "700 anos", "800 anos"],
+                    "resposta": "600 anos"
                 },
                 {
-                    question: "Quem foi o primeiro rei de Israel?",
-                    options: ["Davi", "Salomão", "Saul", "Josué"],
-                    correct: 2,
-                    explanation: "Saul foi o primeiro rei de Israel, ungido pelo profeta Samuel (1 Samuel 10:1)."
+                    "pergunta": "Qual apóstolo era conhecido como 'Zelote'?",
+                    "opcoes": ["Simão", "Judas Iscariotes", "Judas Tadeu", "Tiago"],
+                    "resposta": "Simão"
+                },
+                {
+                    "pergunta": "Em qual livro da Bíblia encontramos a história de Ester?",
+                    "opcoes": ["Rute", "Ester", "Esdras", "Neemias"],
+                    "resposta": "Ester"
+                },
+                {
+                    "pergunta": "Quem foi o pai de Isaque?",
+                    "opcoes": ["Abraão", "Jacó", "Ismael", "Esaú"],
+                    "resposta": "Abraão"
                 }
             ]
         };
 
-        // Elementos do DOM
-        const startScreen = document.getElementById('start-screen');
-        const hostScreen = document.getElementById('host-screen');
-        const joinScreen = document.getElementById('join-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const playersPanel = document.getElementById('players-panel');
-        
-        const hostBtn = document.getElementById('host-btn');
-        const joinBtn = document.getElementById('join-btn');
-        const createRoomBtn = document.getElementById('create-room-btn');
-        const joinRoomBtn = document.getElementById('join-room-btn');
-        const startGameBtn = document.getElementById('start-game-btn');
-        const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
-        const backHostBtn = document.getElementById('back-host-btn');
-        const backJoinBtn = document.getElementById('back-join-btn');
-        
-        const hostNameInput = document.getElementById('host-name');
-        const playerNameInput = document.getElementById('player-name-input');
-        const roomCodeInput = document.getElementById('room-code-input');
-        
-        const roomCreatedDiv = document.getElementById('room-created');
-        const roomCodeDisplay = document.getElementById('room-code-display');
-        const hostPlayersList = document.getElementById('host-players-list');
-        const currentPlayerCount = document.getElementById('current-player-count');
-        
-        const joinedRoomDiv = document.getElementById('joined-room');
-        const joinPlayersList = document.getElementById('join-players-list');
-        const joinPlayerCount = document.getElementById('join-player-count');
-        const waitingMessage = document.getElementById('waiting-message');
-        const errorMessage = document.getElementById('error-message');
-        
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const scoreDisplay = document.getElementById('score');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const feedbackDisplay = document.getElementById('feedback');
-        const currentQuestionDisplay = document.getElementById('current-question');
-        const totalQuestionsDisplay = document.getElementById('total-questions');
-        const timerBar = document.getElementById('timer-bar');
-        const playersList = document.getElementById('players-list');
-        const leaderboardContainer = document.getElementById('leaderboard-container');
-        const currentLevelDisplay = document.getElementById('current-level');
-        const gamePlayerCount = document.getElementById('game-player-count');
-        const panelPlayerCount = document.getElementById('panel-player-count');
+        const figurinhas = [
+            { nome: "Pomba Branca", categoria: "comum", icon: "🕊️" },
+            { nome: "Arca de Noé", categoria: "comum", icon: "🚢" },
+            { nome: "Tábuas da Lei", categoria: "comum", icon: "📜" },
+            { nome: "Cruz", categoria: "comum", icon: "✝️" },
+            { nome: "Peixe Cristão", categoria: "comum", icon: "🐟" },
+            { nome: "David com Harpa", categoria: "rara", icon: "🎵" },
+            { nome: "Sansão", categoria: "rara", icon: "💪" },
+            { nome: "Muro de Jericó", categoria: "rara", icon: "🧱" },
+            { nome: "Maná do Céu", categoria: "rara", icon: "🍞" },
+            { nome: "Arca da Aliança", categoria: "lendaria", icon: "📦" },
+            { nome: "Ressurreição", categoria: "lendaria", icon: "✨" },
+            { nome: "Transfiguração", categoria: "lendaria", icon: "🌟" }
+        ];
 
-        // Variáveis do jogo
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let timeLeft = 15;
-        let timer;
-        let playerName = "";
-        let roomCode = "";
-        let isHost = false;
-        let players = [];
-        let gameState = "lobby";
-        let currentLevel = 0;
-        let questions = [];
-        let roomUpdateInterval;
-
-        // Servidor corrigido - SIMULAÇÃO DE BACKEND
-        const gameServer = {
-            rooms: new Map(),
-            MAX_PLAYERS: 10,
-            
-            createRoom(hostName) {
-                const code = this.generateRoomCode();
-                const room = {
-                    host: hostName,
-                    players: [hostName],
-                    gameState: "lobby",
-                    scores: { [hostName]: 0 },
-                    levels: { [hostName]: 0 },
-                    createdAt: Date.now()
-                };
-                
-                this.rooms.set(code, room);
-                console.log(`✅ Sala criada: ${code} por ${hostName}`);
-                return { success: true, code: code };
+        // Estado do jogo
+        let estadoJogo = {
+            jogador: {
+                nome: "Jogador",
+                pontuacao: 0,
+                figurinhas: []
             },
-            
-            joinRoom(code, playerName) {
-                console.log(`Tentando entrar na sala: ${code} como ${playerName}`);
-                
-                // Verificar se a sala existe
-                if (!this.rooms.has(code)) {
-                    console.log(`❌ Sala não encontrada: ${code}`);
-                    return { 
-                        success: false, 
-                        error: "Sala não encontrada. Verifique o código." 
-                    };
-                }
-                
-                const room = this.rooms.get(code);
-                
-                // Verificar se o jogador já está na sala
-                if (room.players.includes(playerName)) {
-                    console.log(`❌ Jogador já está na sala: ${playerName}`);
-                    return { 
-                        success: false, 
-                        error: "Você já está nesta sala." 
-                    };
-                }
-                
-                // Verificar limite de jogadores
-                if (room.players.length >= this.MAX_PLAYERS) {
-                    console.log(`❌ Sala lotada: ${code} (${room.players.length}/${this.MAX_PLAYERS})`);
-                    return { 
-                        success: false, 
-                        error: `Sala lotada! Máximo de ${this.MAX_PLAYERS} jogadores.` 
-                    };
-                }
-                
-                // Adicionar jogador à sala
-                room.players.push(playerName);
-                room.scores[playerName] = 0;
-                room.levels[playerName] = 0;
-                
-                console.log(`✅ Jogador entrou: ${playerName} na sala ${code}`);
-                console.log(`👥 Agora há ${room.players.length} jogadores na sala`);
-                
-                return { 
-                    success: true, 
-                    room: JSON.parse(JSON.stringify(room)) // Deep copy para evitar referências
-                };
-            },
-            
-            getRoom(code) {
-                if (!this.rooms.has(code)) {
-                    console.log(`❌ Tentativa de acessar sala inexistente: ${code}`);
-                    return null;
-                }
-                
-                const room = this.rooms.get(code);
-                return JSON.parse(JSON.stringify(room)); // Retorna cópia para evitar mutação
-            },
-            
-            generateRoomCode() {
-                const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                let result = "";
-                for (let i = 0; i < 4; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                
-                // Garantir que o código seja único
-                if (this.rooms.has(result)) {
-                    return this.generateRoomCode();
-                }
-                
-                return result;
-            },
-            
-            startGame(code) {
-                if (!this.rooms.has(code)) {
-                    console.log(`❌ Não foi possível iniciar jogo: sala ${code} não existe`);
-                    return false;
-                }
-                
-                const room = this.rooms.get(code);
-                room.gameState = "playing";
-                console.log(`🎮 Jogo iniciado na sala: ${code}`);
-                return true;
-            },
-            
-            submitAnswer(code, playerName, answerData) {
-                if (!this.rooms.has(code)) return false;
-                
-                const room = this.rooms.get(code);
-                
-                // Simular processamento de resposta
-                const points = answerData.correct ? 
-                    Math.max(1, Math.floor(answerData.timeLeft / 3)) * (answerData.level + 1) : 0;
-                
-                if (answerData.correct) {
-                    room.scores[playerName] += points;
-                    
-                    // Atualizar nível
-                    const playerScore = room.scores[playerName];
-                    for (let i = levels.length - 1; i >= 0; i--) {
-                        if (playerScore >= levels[i].minPoints) {
-                            room.levels[playerName] = i;
-                            break;
-                        }
-                    }
-                }
-                
-                return true;
-            },
-            
-            // Limpar salas antigas (manutenção)
-            cleanupOldRooms() {
-                const now = Date.now();
-                const ONE_HOUR = 60 * 60 * 1000;
-                
-                for (let [code, room] of this.rooms.entries()) {
-                    if (now - room.createdAt > ONE_HOUR) {
-                        this.rooms.delete(code);
-                        console.log(`🧹 Sala limpa: ${code}`);
-                    }
-                }
-            }
+            modo: null,
+            dificuldade: null,
+            perguntaAtual: null,
+            perguntasRespondidas: [],
+            tempoRestante: 30,
+            intervalo: null,
+            opcaoSelecionada: null,
+            sala: null
         };
 
-        // Executar limpeza a cada 5 minutos
-        setInterval(() => gameServer.cleanupOldRooms(), 5 * 60 * 1000);
+        // Elementos da interface
+        const telas = document.querySelectorAll('.tela');
+        const telaInicial = document.getElementById('tela-inicial');
+        const telaDificuldade = document.getElementById('tela-dificuldade');
+        const telaPergunta = document.getElementById('tela-pergunta');
+        const telaResultado = document.getElementById('tela-resultado');
+        const telaMultiplayer = document.getElementById('tela-multiplayer');
+        const telaSala = document.getElementById('tela-sala');
+        const telaRanking = document.getElementById('tela-ranking');
+        const telaAlbum = document.getElementById('tela-album');
 
-        // Determinar nível atual
-        function getCurrentLevel(points) {
-            for (let i = levels.length - 1; i >= 0; i--) {
-                if (points >= levels[i].minPoints) {
-                    return i;
-                }
-            }
-            return 0;
+        // Funções de navegação
+        function mostrarTela(tela) {
+            telas.forEach(t => t.classList.remove('ativa'));
+            tela.classList.add('ativa');
         }
 
-        // Atualizar display do nível
-        function updateLevelDisplay() {
-            const room = gameServer.getRoom(roomCode);
-            if (!room) return;
+        // Event listeners para navegação
+        document.getElementById('btn-solo').addEventListener('click', () => {
+            estadoJogo.modo = 'solo';
+            mostrarTela(telaDificuldade);
+        });
+
+        document.getElementById('btn-multiplayer').addEventListener('click', () => {
+            estadoJogo.modo = 'multiplayer';
+            mostrarTela(telaMultiplayer);
+        });
+
+        document.getElementById('btn-ranking').addEventListener('click', () => {
+            carregarRanking();
+            mostrarTela(telaRanking);
+        });
+
+        document.getElementById('btn-album').addEventListener('click', () => {
+            carregarAlbum();
+            mostrarTela(telaAlbum);
+        });
+
+        document.querySelectorAll('.voltar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                mostrarTela(telaInicial);
+                resetarJogo();
+            });
+        });
+
+        // Modo Solo - Seleção de dificuldade
+        document.querySelectorAll('.dificuldade-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                estadoJogo.dificuldade = e.target.dataset.dificuldade;
+                iniciarJogoSolo();
+            });
+        });
+
+        // Modo Solo - Iniciar jogo
+        function iniciarJogoSolo() {
+            estadoJogo.perguntasRespondidas = [];
+            estadoJogo.jogador.pontuacao = 0;
+            carregarPergunta();
+            mostrarTela(telaPergunta);
+        }
+
+        // Carregar pergunta aleatória
+        function carregarPergunta() {
+            // Filtrar perguntas não respondidas
+            const perguntasDisponiveis = perguntas[estadoJogo.dificuldade].filter(
+                p => !estadoJogo.perguntasRespondidas.includes(p.pergunta)
+            );
             
-            const playerScore = room.scores[playerName] || 0;
-            currentLevel = getCurrentLevel(playerScore);
-            currentLevelDisplay.textContent = `${currentLevel + 1} - ${levels[currentLevel].name}`;
-        }
-
-        // Atualizar contador de jogadores
-        function updatePlayerCounts(room) {
-            if (!room) return;
-            
-            const playerCount = room.players.length;
-            currentPlayerCount.textContent = playerCount;
-            joinPlayerCount.textContent = playerCount;
-            gamePlayerCount.textContent = playerCount;
-            panelPlayerCount.textContent = playerCount;
-        }
-
-        // Inicializar o quiz como anfitrião
-        function hostGame() {
-            playerName = hostNameInput.value.trim();
-            if (!playerName) {
-                showError("Por favor, digite seu nome");
+            if (perguntasDisponiveis.length === 0) {
+                // Todas as perguntas foram respondidas
+                alert('Parabéns! Você completou todas as perguntas deste nível!');
+                mostrarTela(telaInicial);
                 return;
             }
             
-            const result = gameServer.createRoom(playerName);
-            if (!result.success) {
-                showError("Erro ao criar sala. Tente novamente.");
-                return;
-            }
-            
-            roomCode = result.code;
-            isHost = true;
+            // Selecionar pergunta aleatória
+            const indiceAleatorio = Math.floor(Math.random() * perguntasDisponiveis.length);
+            estadoJogo.perguntaAtual = perguntasDisponiveis[indiceAleatorio];
             
             // Atualizar interface
-            roomCodeDisplay.textContent = roomCode;
-            roomCreatedDiv.style.display = "block";
-            updatePlayersList();
+            document.getElementById('texto-pergunta').textContent = estadoJogo.perguntaAtual.pergunta;
             
-            // Mudar para tela de host
-            startScreen.classList.remove('active');
-            hostScreen.classList.add('active');
-            playersPanel.style.display = "block";
+            const opcoesContainer = document.getElementById('opcoes-container');
+            opcoesContainer.innerHTML = '';
             
-            // Iniciar atualização periódica da sala
-            startRoomUpdates();
-        }
-
-        // Entrar em uma sala como jogador
-        function joinGame() {
-            playerName = playerNameInput.value.trim();
-            roomCode = roomCodeInput.value.trim().toUpperCase();
-            
-            if (!playerName) {
-                showError("Por favor, digite seu nome");
-                return;
-            }
-            
-            if (!roomCode || roomCode.length !== 4) {
-                showError("Por favor, digite um código de sala válido (4 letras)");
-                return;
-            }
-            
-            const result = gameServer.joinRoom(roomCode, playerName);
-            if (!result.success) {
-                showError(result.error);
-                return;
-            }
-            
-            // Sucesso ao entrar na sala
-            hideError();
-            joinedRoomDiv.style.display = "block";
-            updatePlayersList(result.room);
-            
-            // Mudar para tela de jogador
-            startScreen.classList.remove('active');
-            joinScreen.classList.add('active');
-            playersPanel.style.display = "block";
-            
-            // Iniciar atualização periódica da sala
-            startRoomUpdates();
-        }
-
-        // Mostrar mensagem de erro
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = "block";
-        }
-
-        // Esconder mensagem de erro
-        function hideError() {
-            errorMessage.style.display = "none";
-        }
-
-        // Atualizar lista de jogadores
-        function updatePlayersList(roomData = null) {
-            const room = roomData || gameServer.getRoom(roomCode);
-            if (!room) return;
-            
-            players = room.players;
-            updatePlayerCounts(room);
-            
-            // Atualizar lista do host
-            if (isHost) {
-                hostPlayersList.innerHTML = '';
-                players.forEach(player => {
-                    const li = document.createElement('li');
-                    li.className = 'player-item';
-                    const playerLevel = room.levels[player] || 0;
-                    li.innerHTML = `
-                        <span class="player-name-display">${player}</span>
-                        <span class="player-score">${room.scores[player] || 0}</span>
-                    `;
-                    hostPlayersList.appendChild(li);
-                });
-                
-                // Habilitar botão de iniciar se houver pelo menos 2 jogadores
-                startGameBtn.disabled = players.length < 2;
-                if (players.length < 2) {
-                    startGameBtn.textContent = `Iniciar Jogo (mínimo 2 jogadores)`;
-                } else {
-                    startGameBtn.textContent = `Iniciar Jogo (${players.length} jogadores)`;
-                }
-            }
-            
-            // Atualizar lista do jogador
-            joinPlayersList.innerHTML = '';
-            players.forEach(player => {
-                const li = document.createElement('li');
-                li.className = 'player-item';
-                const playerLevel = room.levels[player] || 0;
-                li.innerHTML = `
-                    <span class="player-name-display">${player}</span>
-                    <span class="player-score">${room.scores[player] || 0}</span>
-                `;
-                joinPlayersList.appendChild(li);
+            estadoJogo.perguntaAtual.opcoes.forEach(opcao => {
+                const divOpcao = document.createElement('div');
+                divOpcao.className = 'opcao';
+                divOpcao.textContent = opcao;
+                divOpcao.addEventListener('click', () => selecionarOpcao(divOpcao, opcao));
+                opcoesContainer.appendChild(divOpcao);
             });
             
-            // Atualizar painel lateral
-            playersList.innerHTML = '';
-            players.forEach(player => {
-                const li = document.createElement('li');
-                li.className = 'player-item';
-                const playerLevel = room.levels[player] || 0;
-                li.innerHTML = `
-                    <span class="player-name-display">${player}</span>
-                    <span class="player-level difficulty-${levels[playerLevel].color}">Nv. ${playerLevel + 1}</span>
-                    <span class="player-score">${room.scores[player] || 0}</span>
-                `;
-                playersList.appendChild(li);
-            });
+            // Resetar estado
+            estadoJogo.opcaoSelecionada = null;
+            document.getElementById('btn-confirmar').disabled = true;
+            estadoJogo.tempoRestante = 30;
+            document.getElementById('tempo-restante').textContent = estadoJogo.tempoRestante;
+            
+            // Atualizar barra de progresso
+            const progresso = (estadoJogo.perguntasRespondidas.length / perguntas[estadoJogo.dificuldade].length) * 100;
+            document.getElementById('barra-progresso').style.width = `${progresso}%`;
+            
+            // Iniciar contador
+            clearInterval(estadoJogo.intervalo);
+            estadoJogo.intervalo = setInterval(atualizarTempo, 1000);
         }
 
-        // Iniciar atualizações periódicas da sala
-        function startRoomUpdates() {
-            if (roomUpdateInterval) {
-                clearInterval(roomUpdateInterval);
-            }
-            
-            roomUpdateInterval = setInterval(() => {
-                const room = gameServer.getRoom(roomCode);
-                if (!room) {
-                    // Sala não existe mais
-                    clearInterval(roomUpdateInterval);
-                    alert("A sala foi fechada ou não existe mais.");
-                    backToStart();
-                    return;
-                }
-                
-                updatePlayersList(room);
-                
-                // Verificar se o jogo começou
-                if (room.gameState === "playing" && gameState === "lobby") {
-                    gameState = "playing";
-                    startGame();
-                }
-                
-                // Verificar se o jogo terminou
-                if (room.gameState === "results" && gameState === "playing") {
-                    gameState = "results";
-                    showResults();
-                }
-            }, 2000); // Atualizar a cada 2 segundos
-        }
-
-        // Iniciar o jogo (apenas anfitrião)
-        function startGameAsHost() {
-            if (!isHost) return;
-            
-            if (gameServer.startGame(roomCode)) {
-                gameState = "playing";
-                startGame();
-            }
-        }
-
-        // Mostrar pergunta atual
-        function startGame() {
-            currentQuestionIndex = 0;
-            score = 0;
-            scoreDisplay.textContent = score;
-            totalQuestionsDisplay.textContent = 5; // 5 perguntas por jogo
-            
-            hostScreen.classList.remove('active');
-            joinScreen.classList.remove('active');
-            gameScreen.classList.add('active');
-            
-            showQuestion();
-        }
-
-        function showQuestion() {
-            const room = gameServer.getRoom(roomCode);
-            if (!room) {
-                alert("Erro: sala não encontrada. Voltando ao início.");
-                backToStart();
-                return;
-            }
-            
-            const playerScore = room.scores[playerName] || 0;
-            currentLevel = getCurrentLevel(playerScore);
-            
-            // Selecionar perguntas do nível atual
-            questions = questionsByLevel[Math.min(currentLevel, 2)];
-            
-            const questionIndex = currentQuestionIndex % questions.length;
-            const question = questions[questionIndex];
-            questionText.textContent = question.question;
-            currentQuestionDisplay.textContent = currentQuestionIndex + 1;
-            
-            // Atualizar display do nível
-            updateLevelDisplay();
-            
-            optionsContainer.innerHTML = '';
-            question.options.forEach((option, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.classList.add('option');
-                optionElement.textContent = option;
-                optionElement.addEventListener('click', () => checkAnswer(index, question.correct));
-                optionsContainer.appendChild(optionElement);
+        function selecionarOpcao(elemento, opcao) {
+            // Remover seleção anterior
+            document.querySelectorAll('.opcao').forEach(op => {
+                op.classList.remove('selecionada');
             });
             
-            startTimer();
+            // Selecionar nova opção
+            elemento.classList.add('selecionada');
+            estadoJogo.opcaoSelecionada = opcao;
+            document.getElementById('btn-confirmar').disabled = false;
         }
 
-        // Iniciar temporizador
-        function startTimer() {
-            timeLeft = 15;
-            timerBar.style.width = '100%';
-            timerBar.style.transition = 'width 15s linear';
-            timerBar.style.width = '0%';
+        document.getElementById('btn-confirmar').addEventListener('click', verificarResposta);
+
+        function verificarResposta() {
+            clearInterval(estadoJogo.intervalo);
             
-            timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    checkAnswer(-1, -1); // Tempo esgotado
+            // Marcar pergunta como respondida
+            estadoJogo.perguntasRespondidas.push(estadoJogo.perguntaAtual.pergunta);
+            
+            // Verificar se a resposta está correta
+            const correta = estadoJogo.opcaoSelecionada === estadoJogo.perguntaAtual.resposta;
+            
+            // Atualizar pontuação
+            let pontos = 0;
+            if (correta) {
+                switch(estadoJogo.dificuldade) {
+                    case 'facil': pontos = 10; break;
+                    case 'medio': pontos = 20; break;
+                    case 'dificil': pontos = 30; break;
                 }
-            }, 1000);
+                estadoJogo.jogador.pontuacao += pontos;
+            }
+            
+            // Mostrar resultado
+            mostrarResultado(correta, pontos);
         }
 
-        // Verificar resposta
-        function checkAnswer(selectedIndex, correctIndex) {
-            clearInterval(timer);
+        function atualizarTempo() {
+            estadoJogo.tempoRestante--;
+            document.getElementById('tempo-restante').textContent = estadoJogo.tempoRestante;
             
-            const options = document.querySelectorAll('.option');
-            const isCorrect = selectedIndex === correctIndex;
-            
-            // Mostrar resposta correta
-            if (correctIndex >= 0) {
-                options[correctIndex].classList.add('correct');
+            if (estadoJogo.tempoRestante <= 0) {
+                clearInterval(estadoJogo.intervalo);
+                // Tempo esgotado - resposta incorreta
+                estadoJogo.perguntasRespondidas.push(estadoJogo.perguntaAtual.pergunta);
+                mostrarResultado(false, 0);
             }
+        }
+
+        function mostrarResultado(correta, pontos) {
+            const resultadoTexto = document.getElementById('resultado-texto');
+            const figurinhaContainer = document.getElementById('figurinha-ganha-container');
             
-            // Mostrar resposta errada
-            if (selectedIndex >= 0 && !isCorrect) {
-                options[selectedIndex].classList.add('wrong');
-            }
-            
-            // Enviar resposta para o servidor
-            gameServer.submitAnswer(roomCode, playerName, {
-                correct: isCorrect,
-                timeLeft: timeLeft,
-                level: currentLevel
-            });
-            
-            // Atualizar pontuação local
-            if (isCorrect) {
-                const points = Math.max(1, Math.floor(timeLeft / 3)) * (currentLevel + 1);
-                score += points;
-                scoreDisplay.textContent = score;
-            }
-            
-            // Próxima pergunta após 2 segundos
-            setTimeout(() => {
-                currentQuestionIndex++;
+            if (correta) {
+                resultadoTexto.textContent = "Resposta Correta!";
+                resultadoTexto.className = "resultado-acerto";
                 
-                if (currentQuestionIndex < 5) { // 5 perguntas no total
-                    showQuestion();
-                } else {
-                    // Finalizar jogo
-                    if (isHost) {
-                        const room = gameServer.getRoom(roomCode);
-                        if (room) {
-                            room.gameState = "results";
-                        }
+                // Chance de ganhar figurinha (50% de chance)
+                if (Math.random() < 0.5) {
+                    const figurinha = ganharFigurinha();
+                    if (figurinha) {
+                        figurinhaContainer.style.display = 'block';
+                        document.getElementById('figurinha-ganha-info').innerHTML = `
+                            <div class="figurinha-icon">${figurinha.icon}</div>
+                            <div class="figurinha-nome">${figurinha.nome}</div>
+                            <div class="figurinha-categoria">${figurinha.categoria}</div>
+                        `;
+                    } else {
+                        figurinhaContainer.style.display = 'none';
                     }
-                    showResults();
+                } else {
+                    figurinhaContainer.style.display = 'none';
                 }
-            }, 2000);
-        }
-
-        // Mostrar resultados
-        function showResults() {
-            gameScreen.classList.remove('active');
-            resultScreen.classList.add('active');
-            
-            const room = gameServer.getRoom(roomCode);
-            const playerScore = room ? room.scores[playerName] || 0 : score;
-            
-            finalScoreDisplay.textContent = playerScore;
-            
-            // Determinar feedback
-            if (playerScore >= 100) {
-                feedbackDisplay.textContent = `Parabéns, ${playerName}! Você é um expert bíblico!`;
-            } else if (playerScore >= 50) {
-                feedbackDisplay.textContent = `Muito bom, ${playerName}! Você conhece bem a Bíblia.`;
             } else {
-                feedbackDisplay.textContent = `Bom trabalho, ${playerName}! Continue estudando a Bíblia.`;
+                resultadoTexto.textContent = "Resposta Incorreta!";
+                resultadoTexto.className = "resultado-erro";
+                figurinhaContainer.style.display = 'none';
             }
             
-            // Mostrar classificação
-            showLeaderboard();
+            document.getElementById('pontuacao-atual').textContent = estadoJogo.jogador.pontuacao;
+            mostrarTela(telaResultado);
         }
 
-        // Mostrar classificação
-        function showLeaderboard() {
-            const room = gameServer.getRoom(roomCode);
-            if (!room) return;
+        function ganharFigurinha() {
+            // Calcular probabilidade baseada na dificuldade
+            let probComum = 0.7;
+            let probRara = 0.25;
+            let probLendaria = 0.05;
             
-            const sortedPlayers = Object.entries(room.scores)
-                .sort((a, b) => b[1] - a[1]);
+            // Aumentar chance de figurinhas raras em dificuldades maiores
+            if (estadoJogo.dificuldade === 'medio') {
+                probComum = 0.6;
+                probRara = 0.3;
+                probLendaria = 0.1;
+            } else if (estadoJogo.dificuldade === 'dificil') {
+                probComum = 0.5;
+                probRara = 0.35;
+                probLendaria = 0.15;
+            }
             
-            leaderboardContainer.innerHTML = '';
-            sortedPlayers.forEach(([player, score], index) => {
-                const playerLevel = getCurrentLevel(score);
-                const div = document.createElement('div');
-                div.className = 'leaderboard-item';
-                div.innerHTML = `
-                    <div class="leaderboard-position">${index + 1}º</div>
-                    <div class="leaderboard-name">${player}</div>
-                    <div class="leaderboard-score">${score}</div>
+            // Selecionar categoria baseada na probabilidade
+            const rand = Math.random();
+            let categoria;
+            
+            if (rand < probComum) {
+                categoria = 'comum';
+            } else if (rand < probComum + probRara) {
+                categoria = 'rara';
+            } else {
+                categoria = 'lendaria';
+            }
+            
+            // Filtrar figurinhas disponíveis por categoria
+            const figurinhasDisponiveis = figurinhas.filter(f => 
+                f.categoria === categoria && 
+                !estadoJogo.jogador.figurinhas.some(jf => jf.nome === f.nome)
+            );
+            
+            if (figurinhasDisponiveis.length === 0) {
+                // Todas as figurinhas desta categoria já foram coletadas
+                return null;
+            }
+            
+            // Selecionar figurinha aleatória
+            const indiceAleatorio = Math.floor(Math.random() * figurinhasDisponiveis.length);
+            const figurinha = figurinhasDisponiveis[indiceAleatorio];
+            
+            // Adicionar à coleção do jogador
+            estadoJogo.jogador.figurinhas.push(figurinha);
+            
+            return figurinha;
+        }
+
+        document.getElementById('btn-proxima-pergunta').addEventListener('click', () => {
+            carregarPergunta();
+            mostrarTela(telaPergunta);
+        });
+
+        // Modo Multiplayer
+        document.getElementById('btn-criar-sala').addEventListener('click', criarSala);
+        document.getElementById('btn-entrar-sala').addEventListener('click', entrarSala);
+
+        function criarSala() {
+            // Simular criação de sala (em uma implementação real, isso seria feito no backend)
+            estadoJogo.sala = {
+                id: Math.random().toString(36).substring(2, 8).toUpperCase(),
+                jogadores: [estadoJogo.jogador],
+                estado: 'aguardando'
+            };
+            
+            atualizarTelaSala();
+            mostrarTela(telaSala);
+        }
+
+        function entrarSala() {
+            // Simular entrada em sala (em uma implementação real, isso seria feito no backend)
+            const salaId = prompt("Digite o ID da sala:");
+            if (salaId) {
+                // Simular sala existente
+                estadoJogo.sala = {
+                    id: salaId,
+                    jogadores: [
+                        { nome: "Jogador1", pontuacao: 0 },
+                        { nome: "Jogador2", pontuacao: 0 },
+                        estadoJogo.jogador
+                    ],
+                    estado: 'aguardando'
+                };
+                
+                atualizarTelaSala();
+                mostrarTela(telaSala);
+            }
+        }
+
+        function atualizarTelaSala() {
+            document.getElementById('sala-id').textContent = estadoJogo.sala.id;
+            document.getElementById('contador-jogadores').textContent = estadoJogo.sala.jogadores.length;
+            
+            const jogadoresContainer = document.getElementById('jogadores-sala');
+            jogadoresContainer.innerHTML = '';
+            
+            estadoJogo.sala.jogadores.forEach(jogador => {
+                const divJogador = document.createElement('div');
+                divJogador.className = 'jogador-item';
+                divJogador.textContent = jogador.nome;
+                jogadoresContainer.appendChild(divJogador);
+            });
+            
+            // Habilitar botão de iniciar se houver pelo menos 2 jogadores
+            document.getElementById('btn-iniciar-jogo').disabled = estadoJogo.sala.jogadores.length < 2;
+        }
+
+        document.getElementById('btn-iniciar-jogo').addEventListener('click', () => {
+            alert('Iniciando jogo multiplayer! (Funcionalidade completa requer backend)');
+            // Em uma implementação real, aqui iniciaria o jogo multiplayer
+        });
+
+        // Ranking
+        function carregarRanking() {
+            // Simular dados de ranking (em uma implementação real, viria do backend)
+            const ranking = [
+                { nome: "Maria", pontuacao: 150 },
+                { nome: "João", pontuacao: 120 },
+                { nome: "Pedro", pontuacao: 100 },
+                { nome: "Ana", pontuacao: 90 },
+                { nome: "José", pontuacao: 80 },
+                { nome: estadoJogo.jogador.nome, pontuacao: estadoJogo.jogador.pontuacao }
+            ].sort((a, b) => b.pontuacao - a.pontuacao);
+            
+            const rankingContainer = document.getElementById('ranking-container');
+            rankingContainer.innerHTML = '';
+            
+            ranking.forEach((jogador, index) => {
+                const divRanking = document.createElement('div');
+                divRanking.className = 'ranking-item';
+                divRanking.innerHTML = `
+                    <div>
+                        <span class="ranking-posicao">${index + 1}º</span> 
+                        ${jogador.nome}
+                    </div>
+                    <div>${jogador.pontuacao} pontos</div>
                 `;
-                leaderboardContainer.appendChild(div);
+                
+                // Destacar o jogador atual
+                if (jogador.nome === estadoJogo.jogador.nome) {
+                    divRanking.style.backgroundColor = 'rgba(74, 144, 226, 0.3)';
+                }
+                
+                rankingContainer.appendChild(divRanking);
             });
         }
 
-        // Voltar ao início
-        function backToStart() {
-            // Limpar intervalo de atualização
-            if (roomUpdateInterval) {
-                clearInterval(roomUpdateInterval);
-                roomUpdateInterval = null;
+        // Álbum de Figurinhas
+        function carregarAlbum() {
+            const albumContainer = document.getElementById('album-container');
+            albumContainer.innerHTML = '';
+            
+            if (estadoJogo.jogador.figurinhas.length === 0) {
+                albumContainer.innerHTML = '<div class="vazia">Você ainda não possui figurinhas. Jogue no modo Solo para coletar!</div>';
+                return;
             }
             
-            // Resetar estado do jogo
-            gameState = "lobby";
-            playersPanel.style.display = "none";
-            
-            // Voltar para tela inicial
-            hostScreen.classList.remove('active');
-            joinScreen.classList.remove('active');
-            gameScreen.classList.remove('active');
-            resultScreen.classList.remove('active');
-            startScreen.classList.add('active');
-            
-            // Resetar formulários
-            roomCreatedDiv.style.display = "none";
-            joinedRoomDiv.style.display = "none";
-            hideError();
-            
-            // Resetar variáveis
-            playerName = "";
-            roomCode = "";
-            isHost = false;
-            players = [];
+            estadoJogo.jogador.figurinhas.forEach(figurinha => {
+                const card = document.createElement('div');
+                card.className = `figurinha-card ${figurinha.categoria}`;
+                card.innerHTML = `
+                    <div class="figurinha-icon">${figurinha.icon}</div>
+                    <div class="figurinha-nome">${figurinha.nome}</div>
+                    <div class="figurinha-categoria">${figurinha.categoria}</div>
+                `;
+                albumContainer.appendChild(card);
+            });
         }
 
-        // Event listeners
-        hostBtn.addEventListener('click', () => {
-            startScreen.classList.remove('active');
-            hostScreen.classList.add('active');
-            hostNameInput.focus();
-        });
-        
-        joinBtn.addEventListener('click', () => {
-            startScreen.classList.remove('active');
-            joinScreen.classList.add('active');
-            playerNameInput.focus();
-        });
-        
-        createRoomBtn.addEventListener('click', hostGame);
-        joinRoomBtn.addEventListener('click', joinGame);
-        startGameBtn.addEventListener('click', startGameAsHost);
-        backToLobbyBtn.addEventListener('click', backToStart);
-        backHostBtn.addEventListener('click', backToStart);
-        backJoinBtn.addEventListener('click', backToStart);
-
-        // Permitir enviar com Enter
-        hostNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') hostGame();
-        });
-        
-        playerNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinGame();
-        });
-        
-        roomCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinGame();
+        // Filtro de categorias no álbum
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Ativar botão clicado
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+                e.target.classList.add('ativo');
+                
+                const categoria = e.target.dataset.categoria;
+                filtrarAlbum(categoria);
+            });
         });
 
-        // Focar automaticamente nos campos de entrada
-        if (hostNameInput) hostNameInput.focus();
+        function filtrarAlbum(categoria) {
+            const cards = document.querySelectorAll('.figurinha-card');
+            
+            cards.forEach(card => {
+                if (categoria === 'todas' || card.classList.contains(categoria)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Resetar estado do jogo
+        function resetarJogo() {
+            clearInterval(estadoJogo.intervalo);
+            estadoJogo.modo = null;
+            estadoJogo.dificuldade = null;
+            estadoJogo.perguntaAtual = null;
+            estadoJogo.perguntasRespondidas = [];
+            estadoJogo.tempoRestante = 30;
+            estadoJogo.opcaoSelecionada = null;
+            estadoJogo.sala = null;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Carregar dados do jogador do localStorage (se existirem)
+            const dadosSalvos = localStorage.getItem('quizBiblicoJogador');
+            if (dadosSalvos) {
+                estadoJogo.jogador = JSON.parse(dadosSalvos);
+            }
+            
+            // Salvar dados do jogador periodicamente
+            setInterval(() => {
+                localStorage.setItem('quizBiblicoJogador', JSON.stringify(estadoJogo.jogador));
+            }, 5000);
+        });
     </script>
 </body>
 </html>
