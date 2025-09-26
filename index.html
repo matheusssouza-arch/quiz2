@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Bíblico Multiplayer - Níveis de Dificuldade</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        
+        header {
+            background-color: #4a00e0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .screen {
+            padding: 30px;
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        #start-screen {
+            text-align: center;
+        }
+        
+        #start-screen p {
+            margin: 20px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background-color: #4a00e0;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #3600a3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #8e2de2;
+        }
+        
+        .btn-success {
+            background-color: #4CAF50;
+        }
+        
+        .question-container {
+            margin-bottom: 20px;
+        }
+        
+        .question-number {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .difficulty-facil {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .difficulty-medio {
+            background-color: #FF9800;
+            color: white;
+        }
+        
+        .difficulty-dificil {
+            background-color: #F44336;
+            color: white;
+        }
+        
+        .difficulty-expert {
+            background-color: #9C27B0;
+            color: white;
+        }
+        
+        .difficulty-mestre {
+            background-color: #607D8B;
+            color: white;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .option:hover {
+            background-color: #e9e9e9;
+            transform: scale(1.02);
+        }
+        
+        .option.correct {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .option.wrong {
+            background-color: #F44336;
+            color: white;
+            border-color: #F44336;
+        }
+        
+        .timer-container {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .timer-bar {
+            height: 100%;
+            background-color: #4a00e0;
+            width: 100%;
+            transition: width 1s linear;
+        }
+        
+        .score-container {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        #result-screen {
+            text-align: center;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #4a00e0;
+        }
+        
+        .score-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4a00e0;
+            margin: 20px 0;
+        }
+        
+        .feedback {
+            font-size: 1.3rem;
+            margin: 20px 0;
+        }
+        
+        .player-name {
+            padding: 10px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+        }
+        
+        .players-panel {
+            width: 300px;
+            background-color: #f9f9f9;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .players-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #4a00e0;
+            text-align: center;
+        }
+        
+        .players-list {
+            list-style-type: none;
+        }
+        
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .player-name-display {
+            font-weight: bold;
+        }
+        
+        .player-score {
+            color: #4a00e0;
+            font-weight: bold;
+        }
+        
+        .player-level {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: #e0e0e0;
+        }
+        
+        .room-code {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #4a00e0;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .leaderboard {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1.2rem;
+        }
+        
+        .leaderboard-position {
+            font-weight: bold;
+            width: 40px;
+        }
+        
+        .leaderboard-name {
+            flex: 1;
+            text-align: left;
+            padding-left: 20px;
+        }
+        
+        .leaderboard-score {
+            font-weight: bold;
+            color: #4a00e0;
+        }
+        
+        .level-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .level-card {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            width: 180px;
+            text-align: center;
+        }
+        
+        .level-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .level-points {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .players-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+                max-height: 200px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .level-info {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                height: auto;
+                min-height: 90vh;
+            }
+            
+            .level-card {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quiz Bíblico Multiplayer</h1>
+            <div class="subtitle">Níveis de dificuldade progressivos baseados no ranking!</div>
+        </header>
+        
+        <div class="main-content">
+            <div id="start-screen" class="screen active">
+                <h2>Bem-vindo ao Quiz Bíblico Multiplayer!</h2>
+                <p>Jogue com seus amigos em tempo real. O jogo fica mais difícil conforme seu ranking melhora!</p>
+                
+                <div class="instructions">
+                    <h3>Como funciona o sistema de níveis:</h3>
+                    <ol>
+                        <li><strong>Iniciante</strong> - Perguntas básicas sobre a Bíblia</li>
+                        <li><strong>Intermediário</strong> - Perguntas com mais detalhes</li>
+                        <li><strong>Avançado</strong> - Perguntas sobre passagens específicas</li>
+                        <li><strong>Expert</strong> - Perguntas sobre contextos históricos</li>
+                        <li><strong>Mestre</strong> - Perguntas desafiadoras para verdadeiros especialistas</li>
+                    </ol>
+                    <p>Quanto mais pontos você acumula, mais difícil ficam as perguntas!</p>
+                </div>
+                
+                <div class="level-info">
+                    <div class="level-card">
+                        <div class="level-title dificuldade-facil">Nível 1: Iniciante</div>
+                        <div class="level-points">0-100 pontos</div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title dificuldade-medio">Nível 2: Intermediário</div>
+                        <div class="level-points">101-300 pontos</div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title dificuldade-dificil">Nível 3: Avançado</div>
+                        <div class="level-points">301-600 pontos</div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title dificuldade-expert">Nível 4: Expert</div>
+                        <div class="level-points">601-1000 pontos</div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title dificuldade-mestre">Nível 5: Mestre</div>
+                        <div class="level-points">1001+ pontos</div>
+                    </div>
+                </div>
+                
+                <button class="btn" id="host-btn">Criar Sala (Anfitrião)</button>
+                <button class="btn btn-secondary" id="join-btn">Entrar em uma Sala</button>
+            </div>
+            
+            <div id="host-screen" class="screen">
+                <h2>Criar Sala de Jogo</h2>
+                <input type="text" class="player-name" id="host-name" placeholder="Seu nome como anfitrião" maxlength="15">
+                <br>
+                <button class="btn" id="create-room-btn">Criar Sala</button>
+                
+                <div id="room-created" style="display: none; text-align: center;">
+                    <div class="room-code" id="room-code-display">ABCD</div>
+                    <p>Compartilhe este código com os jogadores!</p>
+                    
+                    <div class="instructions">
+                        <h3>Jogadores na sala:</h3>
+                        <ul class="players-list" id="host-players-list">
+                            <!-- Lista de jogadores será inserida aqui -->
+                        </ul>
+                    </div>
+                    
+                    <button class="btn" id="start-game-btn" disabled>Iniciar Jogo</button>
+                </div>
+            </div>
+            
+            <div id="join-screen" class="screen">
+                <h2>Entrar em uma Sala</h2>
+                <input type="text" class="player-name" id="player-name-input" placeholder="Seu nome" maxlength="15">
+                <br>
+                <input type="text" class="player-name" id="room-code-input" placeholder="Código da sala" maxlength="4" style="text-transform: uppercase;">
+                <br>
+                <button class="btn" id="join-room-btn">Entrar na Sala</button>
+                
+                <div id="joined-room" style="display: none; text-align: center;">
+                    <p>Você entrou na sala! Aguarde o anfitrião iniciar o jogo.</p>
+                    <div class="instructions">
+                        <h3>Jogadores na sala:</h3>
+                        <ul class="players-list" id="join-players-list">
+                            <!-- Lista de jogadores será inserida aqui -->
+                        </ul>
+                    </div>
+                    <div id="waiting-message">Aguardando anfitrião iniciar o jogo...</div>
+                </div>
+            </div>
+            
+            <div id="game-screen" class="screen">
+                <div class="score-container">
+                    Sua pontuação: <span id="score">0</span> | 
+                    Nível: <span id="current-level">1 - Iniciante</span> | 
+                    Próximo nível: <span id="next-level-points">101 pontos</span>
+                </div>
+                <div class="question-container">
+                    <div class="question-number">Pergunta <span id="current-question">1</span> de <span id="total-questions">10</span></div>
+                    <div class="question-text" id="question-text">Qual é a pergunta?</div>
+                </div>
+                <div class="timer-container">
+                    <div class="timer-bar" id="timer-bar"></div>
+                </div>
+                <div class="options-container" id="options-container">
+                    <!-- As opções serão inseridas aqui via JavaScript -->
+                </div>
+            </div>
+            
+            <div id="result-screen" class="screen">
+                <h2 class="result-title">Fim de Jogo!</h2>
+                <div class="score-display" id="final-score">0</div>
+                <div class="feedback" id="feedback">Mensagem de feedback</div>
+                
+                <div class="level-info">
+                    <div class="level-card">
+                        <div class="level-title">Seu Nível Atual</div>
+                        <div id="current-level-badge" class="difficulty-facil">Iniciante</div>
+                        <div class="level-points" id="current-level-points">0 pontos</div>
+                    </div>
+                    <div class="level-card">
+                        <div class="level-title">Próximo Nível</div>
+                        <div id="next-level-badge" class="difficulty-medio">Intermediário</div>
+                        <div class="level-points" id="next-level-required">101 pontos necessários</div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard">
+                    <h3>Classificação Final</h3>
+                    <div id="leaderboard-container">
+                        <!-- A classificação será inserida aqui -->
+                    </div>
+                </div>
+                
+                <button class="btn" id="back-to-lobby-btn">Voltar ao Lobby</button>
+            </div>
+            
+            <div class="players-panel" id="players-panel" style="display: none;">
+                <div class="players-title">Jogadores</div>
+                <ul class="players-list" id="players-list">
+                    <!-- Lista de jogadores será inserida aqui -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de níveis
+        const levels = [
+            { name: "Iniciante", minPoints: 0, maxPoints: 100, difficulty: "Fácil", color: "facil" },
+            { name: "Intermediário", minPoints: 101, maxPoints: 300, difficulty: "Médio", color: "medio" },
+            { name: "Avançado", minPoints: 301, maxPoints: 600, difficulty: "Difícil", color: "dificil" },
+            { name: "Expert", minPoints: 601, maxPoints: 1000, difficulty: "Expert", color: "expert" },
+            { name: "Mestre", minPoints: 1001, maxPoints: Infinity, difficulty: "Mestre", color: "mestre" }
+        ];
+
+        // Perguntas do quiz organizadas por nível de dificuldade
+        const questionsByLevel = {
+            0: [ // Nível 1 - Iniciante
+                {
+                    question: "Quantos discípulos Jesus escolheu?",
+                    options: ["7", "10", "12", "15"],
+                    correct: 2,
+                    explanation: "Jesus escolheu 12 discípulos para estarem com Ele e para os enviar a pregar (Marcos 3:14)."
+                },
+                {
+                    question: "Qual é o primeiro livro da Bíblia?",
+                    options: ["Êxodo", "Gênesis", "Mateus", "Jó"],
+                    correct: 1,
+                    explanation: "Gênesis é o primeiro livro da Bíblia, que narra a criação do mundo."
+                },
+                {
+                    question: "Quem construiu a arca?",
+                    options: ["Moisés", "Abraão", "Noé", "Davi"],
+                    correct: 2,
+                    explanation: "Noé construiu a arca por ordem de Deus para salvar sua família e os animais do dilúvio (Gênesis 6:14)."
+                }
+            ],
+            1: [ // Nível 2 - Intermediário
+                {
+                    question: "Quem foi jogado na cova dos leões por orar a Deus?",
+                    options: ["José", "Davi", "Daniel", "Jonas"],
+                    correct: 2,
+                    explanation: "Daniel foi jogado na cova dos leões por continuar orando a Deus, desobedecendo ao decreto real (Daniel 6:16)."
+                },
+                {
+                    question: "Qual foi o primeiro milagre de Jesus?",
+                    options: ["Multiplicação dos pães", "Cura do cego", "Transformação de água em vinho", "Ressurreição de Lázaro"],
+                    correct: 2,
+                    explanation: "O primeiro milagre de Jesus foi transformar água em vinho nas bodas de Caná (João 2:1-11)."
+                },
+                {
+                    question: "Quem negou Jesus três vezes antes do galo cantar?",
+                    options: ["Judas", "Tomé", "Pedro", "João"],
+                    correct: 2,
+                    explanation: "Pedro negou Jesus três vezes, conforme Jesus havia predito (Mateus 26:69-75)."
+                }
+            ],
+            2: [ // Nível 3 - Avançado
+                {
+                    question: "Qual destes NÃO é um livro do Novo Testamento?",
+                    options: ["Atos", "Êxodo", "Romanos", "Apocalipse"],
+                    correct: 1,
+                    explanation: "Êxodo é um livro do Antigo Testamento, que conta a saída dos israelitas do Egito."
+                },
+                {
+                    question: "Quem foi o primeiro rei de Israel?",
+                    options: ["Davi", "Salomão", "Saul", "Josué"],
+                    correct: 2,
+                    explanation: "Saul foi o primeiro rei de Israel, ungido pelo profeta Samuel (1 Samuel 10:1)."
+                },
+                {
+                    question: "Quem foi lançado no fogo por se recusar a adorar uma estátua?",
+                    options: ["Sadraque, Mesaque e Abede-Nego", "Pedro, Tiago e João", "Abraão, Isaque e Jacó", "Paulo, Silas e Timóteo"],
+                    correct: 0,
+                    explanation: "Sadraque, Mesaque e Abede-Nego se recusaram a adorar a estátua de Nabucodonosor e foram lançados na fornalha (Daniel 3:19-23)."
+                }
+            ],
+            3: [ // Nível 4 - Expert
+                {
+                    question: "Quem escreveu a maior parte das cartas do Novo Testamento?",
+                    options: ["Pedro", "João", "Paulo", "Tiago"],
+                    correct: 2,
+                    explanation: "O apóstolo Paulo escreveu a maior parte das cartas (epístolas) do Novo Testamento."
+                },
+                {
+                    question: "Qual é o último livro da Bíblia?",
+                    options: ["Judas", "Apocalipse", "Malaquias", "2 Pedro"],
+                    correct: 1,
+                    explanation: "Apocalipse é o último livro da Bíblia, que contém visões proféticas sobre o fim dos tempos."
+                },
+                {
+                    question: "Em qual cidade Jesus foi crucificado?",
+                    options: ["Belém", "Nazaré", "Jerusalém", "Jericó"],
+                    correct: 2,
+                    explanation: "Jesus foi crucificado em Jerusalém, no lugar chamado Gólgota (Mateus 27:33)."
+                }
+            ],
+            4: [ // Nível 5 - Mestre
+                {
+                    question: "Quantos anos tinha Josué quando morreu?",
+                    options: ["90 anos", "110 anos", "120 anos", "130 anos"],
+                    correct: 1,
+                    explanation: "Josué morreu com 110 anos de idade (Josué 24:29)."
+                },
+                {
+                    question: "Qual era o nome da mulher que Jesus encontrou no poço na Samaria?",
+                    options: ["Maria", "Marta", "Rute", "A mulher não é nomeada"],
+                    correct: 3,
+                    explanation: "A Bíblia não menciona o nome da mulher samaritana que Jesus encontrou no poço (João 4:7-26)."
+                },
+                {
+                    question: "Quantas vezes Pedro negou Jesus?",
+                    options: ["Duas vezes", "Três vezes", "Quatro vezes", "Não negou"],
+                    correct: 1,
+                    explanation: "Pedro negou Jesus três vezes antes do galo cantar, conforme predito (Mateus 26:69-75)."
+                }
+            ]
+        };
+
+        // Elementos do DOM
+        const startScreen = document.getElementById('start-screen');
+        const hostScreen = document.getElementById('host-screen');
+        const joinScreen = document.getElementById('join-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const playersPanel = document.getElementById('players-panel');
+        
+        const hostBtn = document.getElementById('host-btn');
+        const joinBtn = document.getElementById('join-btn');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+        
+        const hostNameInput = document.getElementById('host-name');
+        const playerNameInput = document.getElementById('player-name-input');
+        const roomCodeInput = document.getElementById('room-code-input');
+        
+        const roomCreatedDiv = document.getElementById('room-created');
+        const roomCodeDisplay = document.getElementById('room-code-display');
+        const hostPlayersList = document.getElementById('host-players-list');
+        
+        const joinedRoomDiv = document.getElementById('joined-room');
+        const joinPlayersList = document.getElementById('join-players-list');
+        const waitingMessage = document.getElementById('waiting-message');
+        
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreDisplay = document.getElementById('score');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const feedbackDisplay = document.getElementById('feedback');
+        const currentQuestionDisplay = document.getElementById('current-question');
+        const totalQuestionsDisplay = document.getElementById('total-questions');
+        const timerBar = document.getElementById('timer-bar');
+        const playersList = document.getElementById('players-list');
+        const leaderboardContainer = document.getElementById('leaderboard-container');
+        const currentLevelDisplay = document.getElementById('current-level');
+        const nextLevelPointsDisplay = document.getElementById('next-level-points');
+        const currentLevelBadge = document.getElementById('current-level-badge');
+        const currentLevelPoints = document.getElementById('current-level-points');
+        const nextLevelBadge = document.getElementById('next-level-badge');
+        const nextLevelRequired = document.getElementById('next-level-required');
+
+        // Variáveis do jogo
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 15;
+        let timer;
+        let playerName = "";
+        let roomCode = "";
+        let isHost = false;
+        let players = [];
+        let playerAnswers = {};
+        let gameState = "lobby"; // lobby, playing, results
+        let currentLevel = 0;
+        let questions = [];
+
+        // Simulação de servidor (em um caso real, isso seria substituído por um backend)
+        const mockServer = {
+            rooms: {},
+            
+            createRoom(hostName) {
+                const code = this.generateRoomCode();
+                this.rooms[code] = {
+                    host: hostName,
+                    players: [hostName],
+                    gameState: "lobby",
+                    currentQuestion: 0,
+                    scores: { [hostName]: 0 },
+                    levels: { [hostName]: 0 },
+                    answers: {}
+                };
+                return code;
+            },
+            
+            joinRoom(code, playerName) {
+                if (this.rooms[code] && this.rooms[code].players.length < 10) {
+                    this.rooms[code].players.push(playerName);
+                    this.rooms[code].scores[playerName] = 0;
+                    this.rooms[code].levels[playerName] = 0;
+                    return true;
+                }
+                return false;
+            },
+            
+            startGame(code) {
+                if (this.rooms[code]) {
+                    this.rooms[code].gameState = "playing";
+                    this.rooms[code].currentQuestion = 0;
+                    return true;
+                }
+                return false;
+            },
+            
+            submitAnswer(code, playerName, questionIndex, answerIndex, timeLeft, level) {
+                if (this.rooms[code] && this.rooms[code].gameState === "playing") {
+                    const points = answerIndex === questionsByLevel[level][questionIndex].correct ? 
+                        Math.max(1, Math.floor(timeLeft / 3)) * (level + 1) : 0;
+                    
+                    this.rooms[code].answers[playerName] = {
+                        questionIndex,
+                        answerIndex,
+                        timeLeft,
+                        score: points,
+                        level
+                    };
+                    
+                    if (answerIndex === questionsByLevel[level][questionIndex].correct) {
+                        this.rooms[code].scores[playerName] += points;
+                        
+                        // Atualizar nível do jogador
+                        const playerScore = this.rooms[code].scores[playerName];
+                        for (let i = levels.length - 1; i >= 0; i--) {
+                            if (playerScore >= levels[i].minPoints) {
+                                this.rooms[code].levels[playerName] = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    return true;
+                }
+                return false;
+            },
+            
+            getRoomData(code) {
+                return this.rooms[code];
+            },
+            
+            generateRoomCode() {
+                const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                let result = "";
+                for (let i = 0; i < 4; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+        };
+
+        // Determinar nível atual com base na pontuação
+        function getCurrentLevel(points) {
+            for (let i = levels.length - 1; i >= 0; i--) {
+                if (points >= levels[i].minPoints) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        // Atualizar display do nível
+        function updateLevelDisplay() {
+            const roomData = mockServer.getRoomData(roomCode);
+            if (!roomData) return;
+            
+            const playerScore = roomData.scores[playerName] || 0;
+            currentLevel = getCurrentLevel(playerScore);
+            const nextLevel = currentLevel < levels.length - 1 ? currentLevel + 1 : currentLevel;
+            
+            currentLevelDisplay.textContent = `${currentLevel + 1} - ${levels[currentLevel].name}`;
+            nextLevelPointsDisplay.textContent = `${levels[nextLevel].minPoints} pontos`;
+            
+            // Adicionar badge de dificuldade à pergunta
+            const difficultyBadge = document.createElement('span');
+            difficultyBadge.className = `difficulty-badge difficulty-${levels[currentLevel].color}`;
+            difficultyBadge.textContent = levels[currentLevel].difficulty;
+            
+            // Remover badge anterior se existir
+            const existingBadge = questionText.querySelector('.difficulty-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            questionText.appendChild(difficultyBadge);
+        }
+
+        // Inicializar o quiz como anfitrião
+        function hostGame() {
+            playerName = hostNameInput.value.trim() || "Anfitrião";
+            if (!playerName) return;
+            
+            roomCode = mockServer.createRoom(playerName);
+            isHost = true;
+            players = [playerName];
+            
+            roomCodeDisplay.textContent = roomCode;
+            roomCreatedDiv.style.display = "block";
+            updatePlayersList(hostPlayersList);
+            
+            startScreen.classList.remove('active');
+            hostScreen.classList.add('active');
+            playersPanel.style.display = "block";
+            
+            // Simular atualizações periódicas da sala
+            setInterval(updateRoomData, 2000);
+        }
+
+        // Entrar em uma sala como jogador
+        function joinGame() {
+            playerName = playerNameInput.value.trim() || "Jogador";
+            roomCode = roomCodeInput.value.trim().toUpperCase();
+            
+            if (!playerName || !roomCode) return;
+            
+            if (mockServer.joinRoom(roomCode, playerName)) {
+                players = mockServer.getRoomData(roomCode).players;
+                
+                joinedRoomDiv.style.display = "block";
+                updatePlayersList(joinPlayersList);
+                
+                startScreen.classList.remove('active');
+                joinScreen.classList.add('active');
+                playersPanel.style.display = "block";
+                
+                // Simular atualizações periódicas da sala
+                setInterval(updateRoomData, 2000);
+            } else {
+                alert("Sala não encontrada ou lotada. Verifique o código.");
+            }
+        }
+
+        // Atualizar lista de jogadores
+        function updatePlayersList(listElement) {
+            const roomData = mockServer.getRoomData(roomCode);
+            if (!roomData) return;
+            
+            listElement.innerHTML = '';
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.className = 'player-item';
+                const playerLevel = roomData.levels[player] || 0;
+                li.innerHTML = `
+                    <span class="player-name-display">${player}</span>
+                    <span class="player-level difficulty-${levels[playerLevel].color}">${levels[playerLevel].name}</span>
+                    <span class="player-score">${roomData.scores[player] || 0}</span>
+                `;
+                listElement.appendChild(li);
+            });
+            
+            // Atualizar também o painel lateral
+            playersList.innerHTML = '';
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.className = 'player-item';
+                const playerLevel = roomData.levels[player] || 0;
+                li.innerHTML = `
+                    <span class="player-name-display">${player}</span>
+                    <span class="player-level difficulty-${levels[playerLevel].color}">Nv. ${playerLevel + 1}</span>
+                    <span class="player-score">${roomData.scores[player] || 0}</span>
+                `;
+                playersList.appendChild(li);
+            });
+        }
+
+        // Atualizar dados da sala
+        function updateRoomData() {
+            const roomData = mockServer.getRoomData(roomCode);
+            if (!roomData) return;
+            
+            players = roomData.players;
+            updatePlayersList(isHost ? hostPlayersList : joinPlayersList);
+            
+            if (isHost) {
+                startGameBtn.disabled = players.length < 2;
+            }
+            
+            // Se o jogo começou, atualizar a tela
+            if (roomData.gameState === "playing" && gameState === "lobby") {
+                gameState = "playing";
+                if (isHost) {
+                    hostScreen.classList.remove('active');
+                } else {
+                    joinScreen.classList.remove('active');
+                }
+                gameScreen.classList.add('active');
+                startGame();
+            }
+            
+            // Se o jogo terminou, mostrar resultados
+            if (roomData.gameState === "results" && gameState === "playing") {
+                gameState = "results";
+                showResults();
+            }
+        }
+
+        // Iniciar o jogo (apenas anfitrião)
+        function startGame() {
+            if (!isHost) return;
+            
+            mockServer.startGame(roomCode);
+            gameState = "playing";
+            hostScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            startGame();
+        }
+
+        // Mostrar pergunta atual
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreDisplay.textContent = score;
+            totalQuestionsDisplay.textContent = 10; // 10 perguntas por jogo
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const roomData = mockServer.getRoomData(roomCode);
+            if (!roomData) return;
+            
+            const playerScore = roomData.scores[playerName] || 0;
+            currentLevel = getCurrentLevel(playerScore);
+            
+            // Selecionar perguntas do nível atual
+            questions = questionsByLevel[currentLevel];
+            
+            // Se não houver perguntas suficientes, usar perguntas do nível anterior
+            if (questions.length <= currentQuestionIndex) {
+                const prevLevel = Math.max(0, currentLevel - 1);
+                questions = questionsByLevel[prevLevel];
+            }
+            
+            const question = questions[currentQuestionIndex % questions.length];
+            questionText.textContent = question.question;
+            currentQuestionDisplay.textContent = currentQuestionIndex + 1;
+            
+            // Atualizar display do nível
+            updateLevelDisplay();
+            
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => checkAnswer(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            startTimer();
+        }
+
+        // Iniciar temporizador
+        function startTimer() {
+            timeLeft = 15;
+            timerBar.style.width = '100%';
+            timerBar.style.transition = 'width 15s linear';
+            timerBar.style.width = '0%';
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(-1); // -1 significa que o tempo acabou
+                }
+            }, 1000);
+        }
+
+        // Verificar resposta
+        function checkAnswer(selectedIndex) {
+            clearInterval(timer);
+            
+            const question = questions[currentQuestionIndex % questions.length];
+            const options = document.querySelectorAll('.option');
+            
+            // Mostrar resposta correta
+            options[question.correct].classList.add('correct');
+            
+            // Enviar resposta para o servidor
+            mockServer.submitAnswer(roomCode, playerName, currentQuestionIndex % questions.length, selectedIndex, timeLeft, currentLevel);
+            
+            // Verificar se a resposta está correta
+            if (selectedIndex === question.correct) {
+                // Pontuação baseada no tempo restante e nível de dificuldade
+                const points = Math.max(1, Math.floor(timeLeft / 3)) * (currentLevel + 1);
+                score += points;
+                scoreDisplay.textContent = score;
+            } else if (selectedIndex !== -1) {
+                // Mostrar resposta errada
+                options[selectedIndex].classList.add('wrong');
+            }
+            
+            // Aguardar 2 segundos antes de passar para a próxima pergunta
+            setTimeout(() => {
+                currentQuestionIndex++;
+                
+                if (currentQuestionIndex < 10) { // 10 perguntas no total
+                    showQuestion();
+                } else {
+                    // O anfitrião controla quando mostrar os resultados
+                    if (isHost) {
+                        mockServer.getRoomData(roomCode).gameState = "results";
+                        showResults();
+                    }
+                }
+            }, 2000);
+        }
+
+        // Mostrar resultados
+        function showResults() {
+            gameScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            const roomData = mockServer.getRoomData(roomCode);
+            const playerScore = roomData.scores[playerName] || 0;
+            finalScoreDisplay.textContent = playerScore;
+            
+            // Atualizar informações de nível
+            currentLevel = getCurrentLevel(playerScore);
+            const nextLevel = currentLevel < levels.length - 1 ? currentLevel + 1 : currentLevel;
+            
+            currentLevelBadge.textContent = levels[currentLevel].name;
+            currentLevelBadge.className = `difficulty-badge difficulty-${levels[currentLevel].color}`;
+            currentLevelPoints.textContent = `${playerScore} pontos`;
+            
+            nextLevelBadge.textContent = levels[nextLevel].name;
+            nextLevelBadge.className = `difficulty-badge difficulty-${levels[nextLevel].color}`;
+            nextLevelRequired.textContent = `${levels[nextLevel].minPoints - playerScore} pontos necessários`;
+            
+            // Determinar feedback baseado na pontuação
+            const maxScore = 10 * 5 * (levels.length); // Pontuação máxima teórica
+            const percentage = (playerScore / maxScore) * 100;
+            
+            if (percentage >= 80) {
+                feedbackDisplay.textContent = `Parabéns, ${playerName}! Você é um expert em conhecimento bíblico!`;
+            } else if (percentage >= 60) {
+                feedbackDisplay.textContent = `Muito bom, ${playerName}! Você tem um bom conhecimento bíblico.`;
+            } else if (percentage >= 40) {
+                feedbackDisplay.textContent = `Bom trabalho, ${playerName}! Continue estudando a Bíblia.`;
+            } else {
+                feedbackDisplay.textContent = `Continue estudando, ${playerName}! A Bíblia tem muito a te ensinar.`;
+            }
+            
+            // Mostrar classificação
+            showLeaderboard();
+        }
+
+        // Mostrar classificação
+        function showLeaderboard() {
+            const roomData = mockServer.getRoomData(roomCode);
+            const sortedPlayers = Object.entries(roomData.scores)
+                .sort((a, b) => b[1] - a[1]);
+            
+            leaderboardContainer.innerHTML = '';
+            sortedPlayers.forEach(([player, score], index) => {
+                const playerLevel = getCurrentLevel(score);
+                const div = document.createElement('div');
+                div.className = 'leaderboard-item';
+                div.innerHTML = `
+                    <div class="leaderboard-position">${index + 1}º</div>
+                    <div class="leaderboard-name">${player} <span class="player-level difficulty-${levels[playerLevel].color}">${levels[playerLevel].name}</span></div>
+                    <div class="leaderboard-score">${score}</div>
+                `;
+                leaderboardContainer.appendChild(div);
+            });
+        }
+
+        // Voltar ao lobby
+        function backToLobby() {
+            resultScreen.classList.remove('active');
+            playersPanel.style.display = "none";
+            
+            if (isHost) {
+                hostScreen.classList.add('active');
+            } else {
+                joinScreen.classList.add('active');
+            }
+            
+            gameState = "lobby";
+        }
+
+        // Event listeners
+        hostBtn.addEventListener('click', () => {
+            startScreen.classList.remove('active');
+            hostScreen.classList.add('active');
+        });
+        
+        joinBtn.addEventListener('click', () => {
+            startScreen.classList.remove('active');
+            joinScreen.classList.add('active');
+        });
+        
+        createRoomBtn.addEventListener('click', hostGame);
+        joinRoomBtn.addEventListener('click', joinGame);
+        startGameBtn.addEventListener('click', startGame);
+        backToLobbyBtn.addEventListener('click', backToLobby);
+
+        // Permitir enviar com Enter
+        hostNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') hostGame();
+        });
+        
+        roomCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinGame();
+        });
+    </script>
+</body>
+</html>
