@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Bíblico Multiplayer - Níveis de Dificuldade</title>
+    <title>Quiz Bíblico Multiplayer - Correção de Salas</title>
     <style>
         * {
             margin: 0;
@@ -101,6 +101,10 @@
         
         .btn-success {
             background-color: #4CAF50;
+        }
+        
+        .btn-danger {
+            background-color: #F44336;
         }
         
         .question-container {
@@ -372,6 +376,18 @@
             color: #666;
         }
         
+        .error-message {
+            color: #F44336;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .success-message {
+            color: #4CAF50;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
         @media (max-width: 900px) {
             .main-content {
                 flex-direction: column;
@@ -414,7 +430,7 @@
     <div class="container">
         <header>
             <h1>Quiz Bíblico Multiplayer</h1>
-            <div class="subtitle">Níveis de dificuldade progressivos baseados no ranking!</div>
+            <div class="subtitle">Problema de entrada nas salas corrigido!</div>
         </header>
         
         <div class="main-content">
@@ -423,38 +439,13 @@
                 <p>Jogue com seus amigos em tempo real. O jogo fica mais difícil conforme seu ranking melhora!</p>
                 
                 <div class="instructions">
-                    <h3>Como funciona o sistema de níveis:</h3>
+                    <h3>Como entrar em uma sala:</h3>
                     <ol>
-                        <li><strong>Iniciante</strong> - Perguntas básicas sobre a Bíblia</li>
-                        <li><strong>Intermediário</strong> - Perguntas com mais detalhes</li>
-                        <li><strong>Avançado</strong> - Perguntas sobre passagens específicas</li>
-                        <li><strong>Expert</strong> - Perguntas sobre contextos históricos</li>
-                        <li><strong>Mestre</strong> - Perguntas desafiadoras para verdadeiros especialistas</li>
+                        <li><strong>Anfitrião</strong>: Clique em "Criar Sala" e compartilhe o código</li>
+                        <li><strong>Jogadores</strong>: Clique em "Entrar em uma Sala" e digite o código</li>
+                        <li><strong>Nome</strong>: Digite seu nome antes de entrar</li>
+                        <li><strong>Código</strong>: Use letras maiúsculas (ex: ABCD)</li>
                     </ol>
-                    <p>Quanto mais pontos você acumula, mais difícil ficam as perguntas!</p>
-                </div>
-                
-                <div class="level-info">
-                    <div class="level-card">
-                        <div class="level-title dificuldade-facil">Nível 1: Iniciante</div>
-                        <div class="level-points">0-100 pontos</div>
-                    </div>
-                    <div class="level-card">
-                        <div class="level-title dificuldade-medio">Nível 2: Intermediário</div>
-                        <div class="level-points">101-300 pontos</div>
-                    </div>
-                    <div class="level-card">
-                        <div class="level-title dificuldade-dificil">Nível 3: Avançado</div>
-                        <div class="level-points">301-600 pontos</div>
-                    </div>
-                    <div class="level-card">
-                        <div class="level-title dificuldade-expert">Nível 4: Expert</div>
-                        <div class="level-points">601-1000 pontos</div>
-                    </div>
-                    <div class="level-card">
-                        <div class="level-title dificuldade-mestre">Nível 5: Mestre</div>
-                        <div class="level-points">1001+ pontos</div>
-                    </div>
                 </div>
                 
                 <button class="btn" id="host-btn">Criar Sala (Anfitrião)</button>
@@ -463,11 +454,16 @@
             
             <div id="host-screen" class="screen">
                 <h2>Criar Sala de Jogo</h2>
+                <div class="instructions">
+                    <p>Digite seu nome e clique em "Criar Sala". Compartilhe o código com os jogadores.</p>
+                </div>
                 <input type="text" class="player-name" id="host-name" placeholder="Seu nome como anfitrião" maxlength="15">
                 <br>
                 <button class="btn" id="create-room-btn">Criar Sala</button>
+                <button class="btn btn-danger" id="back-host-btn">Voltar</button>
                 
                 <div id="room-created" style="display: none; text-align: center;">
+                    <div class="success-message">Sala criada com sucesso!</div>
                     <div class="room-code" id="room-code-display">ABCD</div>
                     <p>Compartilhe este código com os jogadores!</p>
                     
@@ -484,14 +480,21 @@
             
             <div id="join-screen" class="screen">
                 <h2>Entrar em uma Sala</h2>
+                <div class="instructions">
+                    <p>Digite seu nome e o código da sala fornecida pelo anfitrião.</p>
+                </div>
                 <input type="text" class="player-name" id="player-name-input" placeholder="Seu nome" maxlength="15">
                 <br>
-                <input type="text" class="player-name" id="room-code-input" placeholder="Código da sala" maxlength="4" style="text-transform: uppercase;">
+                <input type="text" class="player-name" id="room-code-input" placeholder="Código da sala (ex: ABCD)" maxlength="4" style="text-transform: uppercase;">
                 <br>
                 <button class="btn" id="join-room-btn">Entrar na Sala</button>
+                <button class="btn btn-danger" id="back-join-btn">Voltar</button>
+                
+                <div id="error-message" class="error-message" style="display: none;"></div>
                 
                 <div id="joined-room" style="display: none; text-align: center;">
-                    <p>Você entrou na sala! Aguarde o anfitrião iniciar o jogo.</p>
+                    <div class="success-message">Você entrou na sala com sucesso!</div>
+                    <p>Aguardando o anfitrião iniciar o jogo...</p>
                     <div class="instructions">
                         <h3>Jogadores na sala:</h3>
                         <ul class="players-list" id="join-players-list">
@@ -505,8 +508,7 @@
             <div id="game-screen" class="screen">
                 <div class="score-container">
                     Sua pontuação: <span id="score">0</span> | 
-                    Nível: <span id="current-level">1 - Iniciante</span> | 
-                    Próximo nível: <span id="next-level-points">101 pontos</span>
+                    Nível: <span id="current-level">1 - Iniciante</span>
                 </div>
                 <div class="question-container">
                     <div class="question-number">Pergunta <span id="current-question">1</span> de <span id="total-questions">10</span></div>
@@ -525,19 +527,6 @@
                 <div class="score-display" id="final-score">0</div>
                 <div class="feedback" id="feedback">Mensagem de feedback</div>
                 
-                <div class="level-info">
-                    <div class="level-card">
-                        <div class="level-title">Seu Nível Atual</div>
-                        <div id="current-level-badge" class="difficulty-facil">Iniciante</div>
-                        <div class="level-points" id="current-level-points">0 pontos</div>
-                    </div>
-                    <div class="level-card">
-                        <div class="level-title">Próximo Nível</div>
-                        <div id="next-level-badge" class="difficulty-medio">Intermediário</div>
-                        <div class="level-points" id="next-level-required">101 pontos necessários</div>
-                    </div>
-                </div>
-                
                 <div class="leaderboard">
                     <h3>Classificação Final</h3>
                     <div id="leaderboard-container">
@@ -545,11 +534,11 @@
                     </div>
                 </div>
                 
-                <button class="btn" id="back-to-lobby-btn">Voltar ao Lobby</button>
+                <button class="btn" id="back-to-lobby-btn">Voltar ao Início</button>
             </div>
             
             <div class="players-panel" id="players-panel" style="display: none;">
-                <div class="players-title">Jogadores</div>
+                <div class="players-title">Jogadores na Sala</div>
                 <ul class="players-list" id="players-list">
                     <!-- Lista de jogadores será inserida aqui -->
                 </ul>
@@ -587,6 +576,18 @@
                     options: ["Moisés", "Abraão", "Noé", "Davi"],
                     correct: 2,
                     explanation: "Noé construiu a arca por ordem de Deus para salvar sua família e os animais do dilúvio (Gênesis 6:14)."
+                },
+                {
+                    question: "Quem foi engolido por um grande peixe?",
+                    options: ["Jonas", "Pedro", "Paulo", "João"],
+                    correct: 0,
+                    explanation: "Jonas foi engolido por um grande peixe quando tentou fugir da missão que Deus lhe deu (Jonas 1:17)."
+                },
+                {
+                    question: "Qual era o nome do irmão de Moisés?",
+                    options: ["Josué", "Arão", "Calebe", "Eli"],
+                    correct: 1,
+                    explanation: "Arão era o irmão mais velho de Moisés e foi seu porta-voz diante do Faraó (Êxodo 4:14)."
                 }
             ],
             1: [ // Nível 2 - Intermediário
@@ -607,6 +608,18 @@
                     options: ["Judas", "Tomé", "Pedro", "João"],
                     correct: 2,
                     explanation: "Pedro negou Jesus três vezes, conforme Jesus havia predito (Mateus 26:69-75)."
+                },
+                {
+                    question: "Quem foi o primeiro mártir da igreja cristã?",
+                    options: ["Pedro", "Paulo", "Estêvão", "Tiago"],
+                    correct: 2,
+                    explanation: "Estêvão foi o primeiro mártir da igreja cristã, apedrejado por sua fé (Atos 7:59-60)."
+                },
+                {
+                    question: "Qual apóstolo era conhecido como 'o discípulo amado'?",
+                    options: ["Pedro", "Tiago", "João", "André"],
+                    correct: 2,
+                    explanation: "João é frequentemente referido como 'o discípulo amado' nos evangelhos (João 13:23)."
                 }
             ],
             2: [ // Nível 3 - Avançado
@@ -627,46 +640,18 @@
                     options: ["Sadraque, Mesaque e Abede-Nego", "Pedro, Tiago e João", "Abraão, Isaque e Jacó", "Paulo, Silas e Timóteo"],
                     correct: 0,
                     explanation: "Sadraque, Mesaque e Abede-Nego se recusaram a adorar a estátua de Nabucodonosor e foram lançados na fornalha (Daniel 3:19-23)."
-                }
-            ],
-            3: [ // Nível 4 - Expert
-                {
-                    question: "Quem escreveu a maior parte das cartas do Novo Testamento?",
-                    options: ["Pedro", "João", "Paulo", "Tiago"],
-                    correct: 2,
-                    explanation: "O apóstolo Paulo escreveu a maior parte das cartas (epístolas) do Novo Testamento."
                 },
                 {
-                    question: "Qual é o último livro da Bíblia?",
-                    options: ["Judas", "Apocalipse", "Malaquias", "2 Pedro"],
+                    question: "Quantos anos durou o dilúvio?",
+                    options: ["40 dias e 40 noites", "100 dias", "1 ano", "7 dias"],
+                    correct: 0,
+                    explanation: "O dilúvio durou 40 dias e 40 noites (Gênesis 7:12)."
+                },
+                {
+                    question: "Qual era o nome da mulher de Adão?",
+                    options: ["Sara", "Eva", "Rebeca", "Lia"],
                     correct: 1,
-                    explanation: "Apocalipse é o último livro da Bíblia, que contém visões proféticas sobre o fim dos tempos."
-                },
-                {
-                    question: "Em qual cidade Jesus foi crucificado?",
-                    options: ["Belém", "Nazaré", "Jerusalém", "Jericó"],
-                    correct: 2,
-                    explanation: "Jesus foi crucificado em Jerusalém, no lugar chamado Gólgota (Mateus 27:33)."
-                }
-            ],
-            4: [ // Nível 5 - Mestre
-                {
-                    question: "Quantos anos tinha Josué quando morreu?",
-                    options: ["90 anos", "110 anos", "120 anos", "130 anos"],
-                    correct: 1,
-                    explanation: "Josué morreu com 110 anos de idade (Josué 24:29)."
-                },
-                {
-                    question: "Qual era o nome da mulher que Jesus encontrou no poço na Samaria?",
-                    options: ["Maria", "Marta", "Rute", "A mulher não é nomeada"],
-                    correct: 3,
-                    explanation: "A Bíblia não menciona o nome da mulher samaritana que Jesus encontrou no poço (João 4:7-26)."
-                },
-                {
-                    question: "Quantas vezes Pedro negou Jesus?",
-                    options: ["Duas vezes", "Três vezes", "Quatro vezes", "Não negou"],
-                    correct: 1,
-                    explanation: "Pedro negou Jesus três vezes antes do galo cantar, conforme predito (Mateus 26:69-75)."
+                    explanation: "Eva foi a primeira mulher, criada por Deus como companheira para Adão (Gênesis 2:22)."
                 }
             ]
         };
@@ -685,6 +670,8 @@
         const joinRoomBtn = document.getElementById('join-room-btn');
         const startGameBtn = document.getElementById('start-game-btn');
         const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+        const backHostBtn = document.getElementById('back-host-btn');
+        const backJoinBtn = document.getElementById('back-join-btn');
         
         const hostNameInput = document.getElementById('host-name');
         const playerNameInput = document.getElementById('player-name-input');
@@ -697,6 +684,7 @@
         const joinedRoomDiv = document.getElementById('joined-room');
         const joinPlayersList = document.getElementById('join-players-list');
         const waitingMessage = document.getElementById('waiting-message');
+        const errorMessage = document.getElementById('error-message');
         
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
@@ -709,11 +697,6 @@
         const playersList = document.getElementById('players-list');
         const leaderboardContainer = document.getElementById('leaderboard-container');
         const currentLevelDisplay = document.getElementById('current-level');
-        const nextLevelPointsDisplay = document.getElementById('next-level-points');
-        const currentLevelBadge = document.getElementById('current-level-badge');
-        const currentLevelPoints = document.getElementById('current-level-points');
-        const nextLevelBadge = document.getElementById('next-level-badge');
-        const nextLevelRequired = document.getElementById('next-level-required');
 
         // Variáveis do jogo
         let currentQuestionIndex = 0;
@@ -724,81 +707,56 @@
         let roomCode = "";
         let isHost = false;
         let players = [];
-        let playerAnswers = {};
-        let gameState = "lobby"; // lobby, playing, results
+        let gameState = "lobby";
         let currentLevel = 0;
         let questions = [];
+        let roomUpdateInterval;
 
-        // Simulação de servidor (em um caso real, isso seria substituído por um backend)
-        const mockServer = {
-            rooms: {},
+        // Servidor simplificado e corrigido
+        const gameServer = {
+            rooms: new Map(),
             
             createRoom(hostName) {
                 const code = this.generateRoomCode();
-                this.rooms[code] = {
+                const room = {
                     host: hostName,
                     players: [hostName],
                     gameState: "lobby",
-                    currentQuestion: 0,
                     scores: { [hostName]: 0 },
-                    levels: { [hostName]: 0 },
-                    answers: {}
+                    levels: { [hostName]: 0 }
                 };
+                this.rooms.set(code, room);
+                console.log(`Sala criada: ${code} por ${hostName}`);
                 return code;
             },
             
             joinRoom(code, playerName) {
-                if (this.rooms[code] && this.rooms[code].players.length < 10) {
-                    this.rooms[code].players.push(playerName);
-                    this.rooms[code].scores[playerName] = 0;
-                    this.rooms[code].levels[playerName] = 0;
-                    return true;
+                const room = this.rooms.get(code);
+                if (!room) {
+                    console.log(`Sala não encontrada: ${code}`);
+                    return { success: false, error: "Sala não encontrada" };
                 }
-                return false;
+                
+                if (room.players.includes(playerName)) {
+                    console.log(`Jogador já está na sala: ${playerName}`);
+                    return { success: false, error: "Você já está nesta sala" };
+                }
+                
+                if (room.players.length >= 10) {
+                    console.log(`Sala lotada: ${code}`);
+                    return { success: false, error: "Sala lotada (máximo 10 jogadores)" };
+                }
+                
+                room.players.push(playerName);
+                room.scores[playerName] = 0;
+                room.levels[playerName] = 0;
+                
+                console.log(`Jogador entrou: ${playerName} na sala ${code}`);
+                return { success: true, room };
             },
             
-            startGame(code) {
-                if (this.rooms[code]) {
-                    this.rooms[code].gameState = "playing";
-                    this.rooms[code].currentQuestion = 0;
-                    return true;
-                }
-                return false;
-            },
-            
-            submitAnswer(code, playerName, questionIndex, answerIndex, timeLeft, level) {
-                if (this.rooms[code] && this.rooms[code].gameState === "playing") {
-                    const points = answerIndex === questionsByLevel[level][questionIndex].correct ? 
-                        Math.max(1, Math.floor(timeLeft / 3)) * (level + 1) : 0;
-                    
-                    this.rooms[code].answers[playerName] = {
-                        questionIndex,
-                        answerIndex,
-                        timeLeft,
-                        score: points,
-                        level
-                    };
-                    
-                    if (answerIndex === questionsByLevel[level][questionIndex].correct) {
-                        this.rooms[code].scores[playerName] += points;
-                        
-                        // Atualizar nível do jogador
-                        const playerScore = this.rooms[code].scores[playerName];
-                        for (let i = levels.length - 1; i >= 0; i--) {
-                            if (playerScore >= levels[i].minPoints) {
-                                this.rooms[code].levels[playerName] = i;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    return true;
-                }
-                return false;
-            },
-            
-            getRoomData(code) {
-                return this.rooms[code];
+            getRoom(code) {
+                return this.rooms.get(code);
             },
             
             generateRoomCode() {
@@ -807,11 +765,50 @@
                 for (let i = 0; i < 4; i++) {
                     result += chars.charAt(Math.floor(Math.random() * chars.length));
                 }
+                
+                // Garantir que o código seja único
+                if (this.rooms.has(result)) {
+                    return this.generateRoomCode();
+                }
+                
                 return result;
+            },
+            
+            startGame(code) {
+                const room = this.rooms.get(code);
+                if (room) {
+                    room.gameState = "playing";
+                    return true;
+                }
+                return false;
+            },
+            
+            submitAnswer(code, playerName, answerData) {
+                const room = this.rooms.get(code);
+                if (!room) return false;
+                
+                // Simular processamento de resposta
+                const points = answerData.correct ? 
+                    Math.max(1, Math.floor(answerData.timeLeft / 3)) * (answerData.level + 1) : 0;
+                
+                if (answerData.correct) {
+                    room.scores[playerName] += points;
+                    
+                    // Atualizar nível
+                    const playerScore = room.scores[playerName];
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (playerScore >= levels[i].minPoints) {
+                            room.levels[playerName] = i;
+                            break;
+                        }
+                    }
+                }
+                
+                return true;
             }
         };
 
-        // Determinar nível atual com base na pontuação
+        // Determinar nível atual
         function getCurrentLevel(points) {
             for (let i = levels.length - 1; i >= 0; i--) {
                 if (points >= levels[i].minPoints) {
@@ -823,148 +820,178 @@
 
         // Atualizar display do nível
         function updateLevelDisplay() {
-            const roomData = mockServer.getRoomData(roomCode);
-            if (!roomData) return;
+            const room = gameServer.getRoom(roomCode);
+            if (!room) return;
             
-            const playerScore = roomData.scores[playerName] || 0;
+            const playerScore = room.scores[playerName] || 0;
             currentLevel = getCurrentLevel(playerScore);
-            const nextLevel = currentLevel < levels.length - 1 ? currentLevel + 1 : currentLevel;
-            
             currentLevelDisplay.textContent = `${currentLevel + 1} - ${levels[currentLevel].name}`;
-            nextLevelPointsDisplay.textContent = `${levels[nextLevel].minPoints} pontos`;
-            
-            // Adicionar badge de dificuldade à pergunta
-            const difficultyBadge = document.createElement('span');
-            difficultyBadge.className = `difficulty-badge difficulty-${levels[currentLevel].color}`;
-            difficultyBadge.textContent = levels[currentLevel].difficulty;
-            
-            // Remover badge anterior se existir
-            const existingBadge = questionText.querySelector('.difficulty-badge');
-            if (existingBadge) {
-                existingBadge.remove();
-            }
-            
-            questionText.appendChild(difficultyBadge);
         }
 
         // Inicializar o quiz como anfitrião
         function hostGame() {
-            playerName = hostNameInput.value.trim() || "Anfitrião";
-            if (!playerName) return;
+            playerName = hostNameInput.value.trim();
+            if (!playerName) {
+                alert("Por favor, digite seu nome");
+                return;
+            }
             
-            roomCode = mockServer.createRoom(playerName);
+            roomCode = gameServer.createRoom(playerName);
             isHost = true;
-            players = [playerName];
             
+            // Atualizar interface
             roomCodeDisplay.textContent = roomCode;
             roomCreatedDiv.style.display = "block";
-            updatePlayersList(hostPlayersList);
+            updatePlayersList();
             
+            // Mudar para tela de host
             startScreen.classList.remove('active');
             hostScreen.classList.add('active');
             playersPanel.style.display = "block";
             
-            // Simular atualizações periódicas da sala
-            setInterval(updateRoomData, 2000);
+            // Iniciar atualização periódica da sala
+            startRoomUpdates();
         }
 
         // Entrar em uma sala como jogador
         function joinGame() {
-            playerName = playerNameInput.value.trim() || "Jogador";
+            playerName = playerNameInput.value.trim();
             roomCode = roomCodeInput.value.trim().toUpperCase();
             
-            if (!playerName || !roomCode) return;
-            
-            if (mockServer.joinRoom(roomCode, playerName)) {
-                players = mockServer.getRoomData(roomCode).players;
-                
-                joinedRoomDiv.style.display = "block";
-                updatePlayersList(joinPlayersList);
-                
-                startScreen.classList.remove('active');
-                joinScreen.classList.add('active');
-                playersPanel.style.display = "block";
-                
-                // Simular atualizações periódicas da sala
-                setInterval(updateRoomData, 2000);
-            } else {
-                alert("Sala não encontrada ou lotada. Verifique o código.");
+            if (!playerName) {
+                showError("Por favor, digite seu nome");
+                return;
             }
+            
+            if (!roomCode || roomCode.length !== 4) {
+                showError("Por favor, digite um código de sala válido (4 letras)");
+                return;
+            }
+            
+            const result = gameServer.joinRoom(roomCode, playerName);
+            if (!result.success) {
+                showError(result.error);
+                return;
+            }
+            
+            // Sucesso ao entrar na sala
+            hideError();
+            joinedRoomDiv.style.display = "block";
+            updatePlayersList();
+            
+            // Mudar para tela de jogador
+            startScreen.classList.remove('active');
+            joinScreen.classList.add('active');
+            playersPanel.style.display = "block";
+            
+            // Iniciar atualização periódica da sala
+            startRoomUpdates();
+        }
+
+        // Mostrar mensagem de erro
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = "block";
+        }
+
+        // Esconder mensagem de erro
+        function hideError() {
+            errorMessage.style.display = "none";
         }
 
         // Atualizar lista de jogadores
-        function updatePlayersList(listElement) {
-            const roomData = mockServer.getRoomData(roomCode);
-            if (!roomData) return;
+        function updatePlayersList() {
+            const room = gameServer.getRoom(roomCode);
+            if (!room) return;
             
-            listElement.innerHTML = '';
+            players = room.players;
+            
+            // Atualizar lista do host
+            if (isHost) {
+                hostPlayersList.innerHTML = '';
+                players.forEach(player => {
+                    const li = document.createElement('li');
+                    li.className = 'player-item';
+                    const playerLevel = room.levels[player] || 0;
+                    li.innerHTML = `
+                        <span class="player-name-display">${player}</span>
+                        <span class="player-score">${room.scores[player] || 0}</span>
+                    `;
+                    hostPlayersList.appendChild(li);
+                });
+                
+                // Habilitar botão de iniciar se houver pelo menos 2 jogadores
+                startGameBtn.disabled = players.length < 2;
+            }
+            
+            // Atualizar lista do jogador
+            joinPlayersList.innerHTML = '';
             players.forEach(player => {
                 const li = document.createElement('li');
                 li.className = 'player-item';
-                const playerLevel = roomData.levels[player] || 0;
+                const playerLevel = room.levels[player] || 0;
                 li.innerHTML = `
                     <span class="player-name-display">${player}</span>
-                    <span class="player-level difficulty-${levels[playerLevel].color}">${levels[playerLevel].name}</span>
-                    <span class="player-score">${roomData.scores[player] || 0}</span>
+                    <span class="player-score">${room.scores[player] || 0}</span>
                 `;
-                listElement.appendChild(li);
+                joinPlayersList.appendChild(li);
             });
             
-            // Atualizar também o painel lateral
+            // Atualizar painel lateral
             playersList.innerHTML = '';
             players.forEach(player => {
                 const li = document.createElement('li');
                 li.className = 'player-item';
-                const playerLevel = roomData.levels[player] || 0;
+                const playerLevel = room.levels[player] || 0;
                 li.innerHTML = `
                     <span class="player-name-display">${player}</span>
                     <span class="player-level difficulty-${levels[playerLevel].color}">Nv. ${playerLevel + 1}</span>
-                    <span class="player-score">${roomData.scores[player] || 0}</span>
+                    <span class="player-score">${room.scores[player] || 0}</span>
                 `;
                 playersList.appendChild(li);
             });
         }
 
-        // Atualizar dados da sala
-        function updateRoomData() {
-            const roomData = mockServer.getRoomData(roomCode);
-            if (!roomData) return;
-            
-            players = roomData.players;
-            updatePlayersList(isHost ? hostPlayersList : joinPlayersList);
-            
-            if (isHost) {
-                startGameBtn.disabled = players.length < 2;
+        // Iniciar atualizações periódicas da sala
+        function startRoomUpdates() {
+            if (roomUpdateInterval) {
+                clearInterval(roomUpdateInterval);
             }
             
-            // Se o jogo começou, atualizar a tela
-            if (roomData.gameState === "playing" && gameState === "lobby") {
-                gameState = "playing";
-                if (isHost) {
-                    hostScreen.classList.remove('active');
-                } else {
-                    joinScreen.classList.remove('active');
+            roomUpdateInterval = setInterval(() => {
+                const room = gameServer.getRoom(roomCode);
+                if (!room) {
+                    // Sala não existe mais
+                    clearInterval(roomUpdateInterval);
+                    alert("A sala foi fechada");
+                    backToStart();
+                    return;
                 }
-                gameScreen.classList.add('active');
-                startGame();
-            }
-            
-            // Se o jogo terminou, mostrar resultados
-            if (roomData.gameState === "results" && gameState === "playing") {
-                gameState = "results";
-                showResults();
-            }
+                
+                updatePlayersList();
+                
+                // Verificar se o jogo começou
+                if (room.gameState === "playing" && gameState === "lobby") {
+                    gameState = "playing";
+                    startGame();
+                }
+                
+                // Verificar se o jogo terminou
+                if (room.gameState === "results" && gameState === "playing") {
+                    gameState = "results";
+                    showResults();
+                }
+            }, 1000);
         }
 
         // Iniciar o jogo (apenas anfitrião)
-        function startGame() {
+        function startGameAsHost() {
             if (!isHost) return;
             
-            mockServer.startGame(roomCode);
-            gameState = "playing";
-            hostScreen.classList.remove('active');
-            gameScreen.classList.add('active');
-            startGame();
+            if (gameServer.startGame(roomCode)) {
+                gameState = "playing";
+                startGame();
+            }
         }
 
         // Mostrar pergunta atual
@@ -972,27 +999,27 @@
             currentQuestionIndex = 0;
             score = 0;
             scoreDisplay.textContent = score;
-            totalQuestionsDisplay.textContent = 10; // 10 perguntas por jogo
+            totalQuestionsDisplay.textContent = 5; // 5 perguntas por jogo
+            
+            hostScreen.classList.remove('active');
+            joinScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            
             showQuestion();
         }
 
         function showQuestion() {
-            const roomData = mockServer.getRoomData(roomCode);
-            if (!roomData) return;
+            const room = gameServer.getRoom(roomCode);
+            if (!room) return;
             
-            const playerScore = roomData.scores[playerName] || 0;
+            const playerScore = room.scores[playerName] || 0;
             currentLevel = getCurrentLevel(playerScore);
             
             // Selecionar perguntas do nível atual
-            questions = questionsByLevel[currentLevel];
+            questions = questionsByLevel[Math.min(currentLevel, 2)]; // Máximo nível 2 por enquanto
             
-            // Se não houver perguntas suficientes, usar perguntas do nível anterior
-            if (questions.length <= currentQuestionIndex) {
-                const prevLevel = Math.max(0, currentLevel - 1);
-                questions = questionsByLevel[prevLevel];
-            }
-            
-            const question = questions[currentQuestionIndex % questions.length];
+            const questionIndex = currentQuestionIndex % questions.length;
+            const question = questions[questionIndex];
             questionText.textContent = question.question;
             currentQuestionDisplay.textContent = currentQuestionIndex + 1;
             
@@ -1004,7 +1031,7 @@
                 const optionElement = document.createElement('div');
                 optionElement.classList.add('option');
                 optionElement.textContent = option;
-                optionElement.addEventListener('click', () => checkAnswer(index));
+                optionElement.addEventListener('click', () => checkAnswer(index, question.correct));
                 optionsContainer.appendChild(optionElement);
             });
             
@@ -1022,47 +1049,57 @@
                 timeLeft--;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    checkAnswer(-1); // -1 significa que o tempo acabou
+                    checkAnswer(-1, -1); // Tempo esgotado
                 }
             }, 1000);
         }
 
         // Verificar resposta
-        function checkAnswer(selectedIndex) {
+        function checkAnswer(selectedIndex, correctIndex) {
             clearInterval(timer);
             
-            const question = questions[currentQuestionIndex % questions.length];
             const options = document.querySelectorAll('.option');
+            const isCorrect = selectedIndex === correctIndex;
             
             // Mostrar resposta correta
-            options[question.correct].classList.add('correct');
+            if (correctIndex >= 0) {
+                options[correctIndex].classList.add('correct');
+            }
             
-            // Enviar resposta para o servidor
-            mockServer.submitAnswer(roomCode, playerName, currentQuestionIndex % questions.length, selectedIndex, timeLeft, currentLevel);
-            
-            // Verificar se a resposta está correta
-            if (selectedIndex === question.correct) {
-                // Pontuação baseada no tempo restante e nível de dificuldade
-                const points = Math.max(1, Math.floor(timeLeft / 3)) * (currentLevel + 1);
-                score += points;
-                scoreDisplay.textContent = score;
-            } else if (selectedIndex !== -1) {
-                // Mostrar resposta errada
+            // Mostrar resposta errada
+            if (selectedIndex >= 0 && !isCorrect) {
                 options[selectedIndex].classList.add('wrong');
             }
             
-            // Aguardar 2 segundos antes de passar para a próxima pergunta
+            // Enviar resposta para o servidor
+            gameServer.submitAnswer(roomCode, playerName, {
+                correct: isCorrect,
+                timeLeft: timeLeft,
+                level: currentLevel
+            });
+            
+            // Atualizar pontuação local
+            if (isCorrect) {
+                const points = Math.max(1, Math.floor(timeLeft / 3)) * (currentLevel + 1);
+                score += points;
+                scoreDisplay.textContent = score;
+            }
+            
+            // Próxima pergunta após 2 segundos
             setTimeout(() => {
                 currentQuestionIndex++;
                 
-                if (currentQuestionIndex < 10) { // 10 perguntas no total
+                if (currentQuestionIndex < 5) { // 5 perguntas no total
                     showQuestion();
                 } else {
-                    // O anfitrião controla quando mostrar os resultados
+                    // Finalizar jogo
                     if (isHost) {
-                        mockServer.getRoomData(roomCode).gameState = "results";
-                        showResults();
+                        const room = gameServer.getRoom(roomCode);
+                        if (room) {
+                            room.gameState = "results";
+                        }
                     }
+                    showResults();
                 }
             }, 2000);
         }
@@ -1072,34 +1109,18 @@
             gameScreen.classList.remove('active');
             resultScreen.classList.add('active');
             
-            const roomData = mockServer.getRoomData(roomCode);
-            const playerScore = roomData.scores[playerName] || 0;
+            const room = gameServer.getRoom(roomCode);
+            const playerScore = room ? room.scores[playerName] || 0 : score;
+            
             finalScoreDisplay.textContent = playerScore;
             
-            // Atualizar informações de nível
-            currentLevel = getCurrentLevel(playerScore);
-            const nextLevel = currentLevel < levels.length - 1 ? currentLevel + 1 : currentLevel;
-            
-            currentLevelBadge.textContent = levels[currentLevel].name;
-            currentLevelBadge.className = `difficulty-badge difficulty-${levels[currentLevel].color}`;
-            currentLevelPoints.textContent = `${playerScore} pontos`;
-            
-            nextLevelBadge.textContent = levels[nextLevel].name;
-            nextLevelBadge.className = `difficulty-badge difficulty-${levels[nextLevel].color}`;
-            nextLevelRequired.textContent = `${levels[nextLevel].minPoints - playerScore} pontos necessários`;
-            
-            // Determinar feedback baseado na pontuação
-            const maxScore = 10 * 5 * (levels.length); // Pontuação máxima teórica
-            const percentage = (playerScore / maxScore) * 100;
-            
-            if (percentage >= 80) {
-                feedbackDisplay.textContent = `Parabéns, ${playerName}! Você é um expert em conhecimento bíblico!`;
-            } else if (percentage >= 60) {
-                feedbackDisplay.textContent = `Muito bom, ${playerName}! Você tem um bom conhecimento bíblico.`;
-            } else if (percentage >= 40) {
-                feedbackDisplay.textContent = `Bom trabalho, ${playerName}! Continue estudando a Bíblia.`;
+            // Determinar feedback
+            if (playerScore >= 100) {
+                feedbackDisplay.textContent = `Parabéns, ${playerName}! Você é um expert bíblico!`;
+            } else if (playerScore >= 50) {
+                feedbackDisplay.textContent = `Muito bom, ${playerName}! Você conhece bem a Bíblia.`;
             } else {
-                feedbackDisplay.textContent = `Continue estudando, ${playerName}! A Bíblia tem muito a te ensinar.`;
+                feedbackDisplay.textContent = `Bom trabalho, ${playerName}! Continue estudando a Bíblia.`;
             }
             
             // Mostrar classificação
@@ -1108,8 +1129,10 @@
 
         // Mostrar classificação
         function showLeaderboard() {
-            const roomData = mockServer.getRoomData(roomCode);
-            const sortedPlayers = Object.entries(roomData.scores)
+            const room = gameServer.getRoom(roomCode);
+            if (!room) return;
+            
+            const sortedPlayers = Object.entries(room.scores)
                 .sort((a, b) => b[1] - a[1]);
             
             leaderboardContainer.innerHTML = '';
@@ -1119,25 +1142,35 @@
                 div.className = 'leaderboard-item';
                 div.innerHTML = `
                     <div class="leaderboard-position">${index + 1}º</div>
-                    <div class="leaderboard-name">${player} <span class="player-level difficulty-${levels[playerLevel].color}">${levels[playerLevel].name}</span></div>
+                    <div class="leaderboard-name">${player}</div>
                     <div class="leaderboard-score">${score}</div>
                 `;
                 leaderboardContainer.appendChild(div);
             });
         }
 
-        // Voltar ao lobby
-        function backToLobby() {
-            resultScreen.classList.remove('active');
-            playersPanel.style.display = "none";
-            
-            if (isHost) {
-                hostScreen.classList.add('active');
-            } else {
-                joinScreen.classList.add('active');
+        // Voltar ao início
+        function backToStart() {
+            // Limpar intervalo de atualização
+            if (roomUpdateInterval) {
+                clearInterval(roomUpdateInterval);
             }
             
+            // Resetar estado do jogo
             gameState = "lobby";
+            playersPanel.style.display = "none";
+            
+            // Voltar para tela inicial
+            hostScreen.classList.remove('active');
+            joinScreen.classList.remove('active');
+            gameScreen.classList.remove('active');
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            
+            // Resetar formulários
+            roomCreatedDiv.style.display = "none";
+            joinedRoomDiv.style.display = "none";
+            hideError();
         }
 
         // Event listeners
@@ -1153,17 +1186,26 @@
         
         createRoomBtn.addEventListener('click', hostGame);
         joinRoomBtn.addEventListener('click', joinGame);
-        startGameBtn.addEventListener('click', startGame);
-        backToLobbyBtn.addEventListener('click', backToLobby);
+        startGameBtn.addEventListener('click', startGameAsHost);
+        backToLobbyBtn.addEventListener('click', backToStart);
+        backHostBtn.addEventListener('click', backToStart);
+        backJoinBtn.addEventListener('click', backToStart);
 
         // Permitir enviar com Enter
         hostNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') hostGame();
         });
         
+        playerNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinGame();
+        });
+        
         roomCodeInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') joinGame();
         });
+
+        // Focar automaticamente nos campos de entrada
+        hostNameInput.focus();
     </script>
 </body>
 </html>
