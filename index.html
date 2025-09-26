@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Bíblico Multiplayer - Correção de Salas</title>
+    <title>Quiz Bíblico Multiplayer - Sala Corrigida</title>
     <style>
         * {
             margin: 0;
@@ -380,12 +380,26 @@
             color: #F44336;
             margin: 10px 0;
             font-weight: bold;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 5px;
+            border: 1px solid #f44336;
         }
         
         .success-message {
             color: #4CAF50;
             margin: 10px 0;
             font-weight: bold;
+            padding: 10px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+            border: 1px solid #4CAF50;
+        }
+
+        .player-count {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 10px 0;
         }
 
         @media (max-width: 900px) {
@@ -430,13 +444,13 @@
     <div class="container">
         <header>
             <h1>Quiz Bíblico Multiplayer</h1>
-            <div class="subtitle">Problema de entrada nas salas corrigido!</div>
+            <div class="subtitle">Máximo de 10 jogadores por sala - Problema corrigido!</div>
         </header>
         
         <div class="main-content">
             <div id="start-screen" class="screen active">
                 <h2>Bem-vindo ao Quiz Bíblico Multiplayer!</h2>
-                <p>Jogue com seus amigos em tempo real. O jogo fica mais difícil conforme seu ranking melhora!</p>
+                <p>Jogue com seus amigos em tempo real. Máximo de 10 jogadores por sala.</p>
                 
                 <div class="instructions">
                     <h3>Como entrar em uma sala:</h3>
@@ -444,8 +458,9 @@
                         <li><strong>Anfitrião</strong>: Clique em "Criar Sala" e compartilhe o código</li>
                         <li><strong>Jogadores</strong>: Clique em "Entrar em uma Sala" e digite o código</li>
                         <li><strong>Nome</strong>: Digite seu nome antes de entrar</li>
-                        <li><strong>Código</strong>: Use letras maiúsculas (ex: ABCD)</li>
+                        <li><strong>Código</strong>: Use 4 letras maiúsculas (ex: ABCD)</li>
                     </ol>
+                    <p class="player-count">💡 <strong>Máximo de 10 jogadores por sala</strong></p>
                 </div>
                 
                 <button class="btn" id="host-btn">Criar Sala (Anfitrião)</button>
@@ -456,6 +471,7 @@
                 <h2>Criar Sala de Jogo</h2>
                 <div class="instructions">
                     <p>Digite seu nome e clique em "Criar Sala". Compartilhe o código com os jogadores.</p>
+                    <p class="player-count">🎯 <strong>Máximo de 10 jogadores por sala</strong></p>
                 </div>
                 <input type="text" class="player-name" id="host-name" placeholder="Seu nome como anfitrião" maxlength="15">
                 <br>
@@ -463,9 +479,10 @@
                 <button class="btn btn-danger" id="back-host-btn">Voltar</button>
                 
                 <div id="room-created" style="display: none; text-align: center;">
-                    <div class="success-message">Sala criada com sucesso!</div>
+                    <div class="success-message">✅ Sala criada com sucesso!</div>
                     <div class="room-code" id="room-code-display">ABCD</div>
                     <p>Compartilhe este código com os jogadores!</p>
+                    <p class="player-count">👥 Jogadores na sala: <span id="current-player-count">1</span>/10</p>
                     
                     <div class="instructions">
                         <h3>Jogadores na sala:</h3>
@@ -474,7 +491,7 @@
                         </ul>
                     </div>
                     
-                    <button class="btn" id="start-game-btn" disabled>Iniciar Jogo</button>
+                    <button class="btn" id="start-game-btn" disabled>Iniciar Jogo (mínimo 2 jogadores)</button>
                 </div>
             </div>
             
@@ -482,6 +499,7 @@
                 <h2>Entrar em uma Sala</h2>
                 <div class="instructions">
                     <p>Digite seu nome e o código da sala fornecida pelo anfitrião.</p>
+                    <p class="player-count">🎯 <strong>Máximo de 10 jogadores por sala</strong></p>
                 </div>
                 <input type="text" class="player-name" id="player-name-input" placeholder="Seu nome" maxlength="15">
                 <br>
@@ -493,25 +511,28 @@
                 <div id="error-message" class="error-message" style="display: none;"></div>
                 
                 <div id="joined-room" style="display: none; text-align: center;">
-                    <div class="success-message">Você entrou na sala com sucesso!</div>
+                    <div class="success-message">✅ Você entrou na sala com sucesso!</div>
                     <p>Aguardando o anfitrião iniciar o jogo...</p>
+                    <p class="player-count">👥 Jogadores na sala: <span id="join-player-count">1</span>/10</p>
+                    
                     <div class="instructions">
                         <h3>Jogadores na sala:</h3>
                         <ul class="players-list" id="join-players-list">
                             <!-- Lista de jogadores será inserida aqui -->
                         </ul>
                     </div>
-                    <div id="waiting-message">Aguardando anfitrião iniciar o jogo...</div>
+                    <div id="waiting-message">⏳ Aguardando anfitrião iniciar o jogo...</div>
                 </div>
             </div>
             
             <div id="game-screen" class="screen">
                 <div class="score-container">
                     Sua pontuação: <span id="score">0</span> | 
-                    Nível: <span id="current-level">1 - Iniciante</span>
+                    Nível: <span id="current-level">1 - Iniciante</span> |
+                    Jogadores: <span id="game-player-count">1</span>/10
                 </div>
                 <div class="question-container">
-                    <div class="question-number">Pergunta <span id="current-question">1</span> de <span id="total-questions">10</span></div>
+                    <div class="question-number">Pergunta <span id="current-question">1</span> de <span id="total-questions">5</span></div>
                     <div class="question-text" id="question-text">Qual é a pergunta?</div>
                 </div>
                 <div class="timer-container">
@@ -538,7 +559,7 @@
             </div>
             
             <div class="players-panel" id="players-panel" style="display: none;">
-                <div class="players-title">Jogadores na Sala</div>
+                <div class="players-title">Jogadores na Sala (<span id="panel-player-count">1</span>/10)</div>
                 <ul class="players-list" id="players-list">
                     <!-- Lista de jogadores será inserida aqui -->
                 </ul>
@@ -551,9 +572,7 @@
         const levels = [
             { name: "Iniciante", minPoints: 0, maxPoints: 100, difficulty: "Fácil", color: "facil" },
             { name: "Intermediário", minPoints: 101, maxPoints: 300, difficulty: "Médio", color: "medio" },
-            { name: "Avançado", minPoints: 301, maxPoints: 600, difficulty: "Difícil", color: "dificil" },
-            { name: "Expert", minPoints: 601, maxPoints: 1000, difficulty: "Expert", color: "expert" },
-            { name: "Mestre", minPoints: 1001, maxPoints: Infinity, difficulty: "Mestre", color: "mestre" }
+            { name: "Avançado", minPoints: 301, maxPoints: 600, difficulty: "Difícil", color: "dificil" }
         ];
 
         // Perguntas do quiz organizadas por nível de dificuldade
@@ -608,18 +627,6 @@
                     options: ["Judas", "Tomé", "Pedro", "João"],
                     correct: 2,
                     explanation: "Pedro negou Jesus três vezes, conforme Jesus havia predito (Mateus 26:69-75)."
-                },
-                {
-                    question: "Quem foi o primeiro mártir da igreja cristã?",
-                    options: ["Pedro", "Paulo", "Estêvão", "Tiago"],
-                    correct: 2,
-                    explanation: "Estêvão foi o primeiro mártir da igreja cristã, apedrejado por sua fé (Atos 7:59-60)."
-                },
-                {
-                    question: "Qual apóstolo era conhecido como 'o discípulo amado'?",
-                    options: ["Pedro", "Tiago", "João", "André"],
-                    correct: 2,
-                    explanation: "João é frequentemente referido como 'o discípulo amado' nos evangelhos (João 13:23)."
                 }
             ],
             2: [ // Nível 3 - Avançado
@@ -634,24 +641,6 @@
                     options: ["Davi", "Salomão", "Saul", "Josué"],
                     correct: 2,
                     explanation: "Saul foi o primeiro rei de Israel, ungido pelo profeta Samuel (1 Samuel 10:1)."
-                },
-                {
-                    question: "Quem foi lançado no fogo por se recusar a adorar uma estátua?",
-                    options: ["Sadraque, Mesaque e Abede-Nego", "Pedro, Tiago e João", "Abraão, Isaque e Jacó", "Paulo, Silas e Timóteo"],
-                    correct: 0,
-                    explanation: "Sadraque, Mesaque e Abede-Nego se recusaram a adorar a estátua de Nabucodonosor e foram lançados na fornalha (Daniel 3:19-23)."
-                },
-                {
-                    question: "Quantos anos durou o dilúvio?",
-                    options: ["40 dias e 40 noites", "100 dias", "1 ano", "7 dias"],
-                    correct: 0,
-                    explanation: "O dilúvio durou 40 dias e 40 noites (Gênesis 7:12)."
-                },
-                {
-                    question: "Qual era o nome da mulher de Adão?",
-                    options: ["Sara", "Eva", "Rebeca", "Lia"],
-                    correct: 1,
-                    explanation: "Eva foi a primeira mulher, criada por Deus como companheira para Adão (Gênesis 2:22)."
                 }
             ]
         };
@@ -680,9 +669,11 @@
         const roomCreatedDiv = document.getElementById('room-created');
         const roomCodeDisplay = document.getElementById('room-code-display');
         const hostPlayersList = document.getElementById('host-players-list');
+        const currentPlayerCount = document.getElementById('current-player-count');
         
         const joinedRoomDiv = document.getElementById('joined-room');
         const joinPlayersList = document.getElementById('join-players-list');
+        const joinPlayerCount = document.getElementById('join-player-count');
         const waitingMessage = document.getElementById('waiting-message');
         const errorMessage = document.getElementById('error-message');
         
@@ -697,6 +688,8 @@
         const playersList = document.getElementById('players-list');
         const leaderboardContainer = document.getElementById('leaderboard-container');
         const currentLevelDisplay = document.getElementById('current-level');
+        const gamePlayerCount = document.getElementById('game-player-count');
+        const panelPlayerCount = document.getElementById('panel-player-count');
 
         // Variáveis do jogo
         let currentQuestionIndex = 0;
@@ -712,9 +705,10 @@
         let questions = [];
         let roomUpdateInterval;
 
-        // Servidor simplificado e corrigido
+        // Servidor corrigido - SIMULAÇÃO DE BACKEND
         const gameServer = {
             rooms: new Map(),
+            MAX_PLAYERS: 10,
             
             createRoom(hostName) {
                 const code = this.generateRoomCode();
@@ -723,40 +717,69 @@
                     players: [hostName],
                     gameState: "lobby",
                     scores: { [hostName]: 0 },
-                    levels: { [hostName]: 0 }
+                    levels: { [hostName]: 0 },
+                    createdAt: Date.now()
                 };
+                
                 this.rooms.set(code, room);
-                console.log(`Sala criada: ${code} por ${hostName}`);
-                return code;
+                console.log(`✅ Sala criada: ${code} por ${hostName}`);
+                return { success: true, code: code };
             },
             
             joinRoom(code, playerName) {
+                console.log(`Tentando entrar na sala: ${code} como ${playerName}`);
+                
+                // Verificar se a sala existe
+                if (!this.rooms.has(code)) {
+                    console.log(`❌ Sala não encontrada: ${code}`);
+                    return { 
+                        success: false, 
+                        error: "Sala não encontrada. Verifique o código." 
+                    };
+                }
+                
                 const room = this.rooms.get(code);
-                if (!room) {
-                    console.log(`Sala não encontrada: ${code}`);
-                    return { success: false, error: "Sala não encontrada" };
-                }
                 
+                // Verificar se o jogador já está na sala
                 if (room.players.includes(playerName)) {
-                    console.log(`Jogador já está na sala: ${playerName}`);
-                    return { success: false, error: "Você já está nesta sala" };
+                    console.log(`❌ Jogador já está na sala: ${playerName}`);
+                    return { 
+                        success: false, 
+                        error: "Você já está nesta sala." 
+                    };
                 }
                 
-                if (room.players.length >= 10) {
-                    console.log(`Sala lotada: ${code}`);
-                    return { success: false, error: "Sala lotada (máximo 10 jogadores)" };
+                // Verificar limite de jogadores
+                if (room.players.length >= this.MAX_PLAYERS) {
+                    console.log(`❌ Sala lotada: ${code} (${room.players.length}/${this.MAX_PLAYERS})`);
+                    return { 
+                        success: false, 
+                        error: `Sala lotada! Máximo de ${this.MAX_PLAYERS} jogadores.` 
+                    };
                 }
                 
+                // Adicionar jogador à sala
                 room.players.push(playerName);
                 room.scores[playerName] = 0;
                 room.levels[playerName] = 0;
                 
-                console.log(`Jogador entrou: ${playerName} na sala ${code}`);
-                return { success: true, room };
+                console.log(`✅ Jogador entrou: ${playerName} na sala ${code}`);
+                console.log(`👥 Agora há ${room.players.length} jogadores na sala`);
+                
+                return { 
+                    success: true, 
+                    room: JSON.parse(JSON.stringify(room)) // Deep copy para evitar referências
+                };
             },
             
             getRoom(code) {
-                return this.rooms.get(code);
+                if (!this.rooms.has(code)) {
+                    console.log(`❌ Tentativa de acessar sala inexistente: ${code}`);
+                    return null;
+                }
+                
+                const room = this.rooms.get(code);
+                return JSON.parse(JSON.stringify(room)); // Retorna cópia para evitar mutação
             },
             
             generateRoomCode() {
@@ -775,17 +798,21 @@
             },
             
             startGame(code) {
-                const room = this.rooms.get(code);
-                if (room) {
-                    room.gameState = "playing";
-                    return true;
+                if (!this.rooms.has(code)) {
+                    console.log(`❌ Não foi possível iniciar jogo: sala ${code} não existe`);
+                    return false;
                 }
-                return false;
+                
+                const room = this.rooms.get(code);
+                room.gameState = "playing";
+                console.log(`🎮 Jogo iniciado na sala: ${code}`);
+                return true;
             },
             
             submitAnswer(code, playerName, answerData) {
+                if (!this.rooms.has(code)) return false;
+                
                 const room = this.rooms.get(code);
-                if (!room) return false;
                 
                 // Simular processamento de resposta
                 const points = answerData.correct ? 
@@ -805,8 +832,24 @@
                 }
                 
                 return true;
+            },
+            
+            // Limpar salas antigas (manutenção)
+            cleanupOldRooms() {
+                const now = Date.now();
+                const ONE_HOUR = 60 * 60 * 1000;
+                
+                for (let [code, room] of this.rooms.entries()) {
+                    if (now - room.createdAt > ONE_HOUR) {
+                        this.rooms.delete(code);
+                        console.log(`🧹 Sala limpa: ${code}`);
+                    }
+                }
             }
         };
+
+        // Executar limpeza a cada 5 minutos
+        setInterval(() => gameServer.cleanupOldRooms(), 5 * 60 * 1000);
 
         // Determinar nível atual
         function getCurrentLevel(points) {
@@ -828,15 +871,32 @@
             currentLevelDisplay.textContent = `${currentLevel + 1} - ${levels[currentLevel].name}`;
         }
 
+        // Atualizar contador de jogadores
+        function updatePlayerCounts(room) {
+            if (!room) return;
+            
+            const playerCount = room.players.length;
+            currentPlayerCount.textContent = playerCount;
+            joinPlayerCount.textContent = playerCount;
+            gamePlayerCount.textContent = playerCount;
+            panelPlayerCount.textContent = playerCount;
+        }
+
         // Inicializar o quiz como anfitrião
         function hostGame() {
             playerName = hostNameInput.value.trim();
             if (!playerName) {
-                alert("Por favor, digite seu nome");
+                showError("Por favor, digite seu nome");
                 return;
             }
             
-            roomCode = gameServer.createRoom(playerName);
+            const result = gameServer.createRoom(playerName);
+            if (!result.success) {
+                showError("Erro ao criar sala. Tente novamente.");
+                return;
+            }
+            
+            roomCode = result.code;
             isHost = true;
             
             // Atualizar interface
@@ -877,7 +937,7 @@
             // Sucesso ao entrar na sala
             hideError();
             joinedRoomDiv.style.display = "block";
-            updatePlayersList();
+            updatePlayersList(result.room);
             
             // Mudar para tela de jogador
             startScreen.classList.remove('active');
@@ -900,11 +960,12 @@
         }
 
         // Atualizar lista de jogadores
-        function updatePlayersList() {
-            const room = gameServer.getRoom(roomCode);
+        function updatePlayersList(roomData = null) {
+            const room = roomData || gameServer.getRoom(roomCode);
             if (!room) return;
             
             players = room.players;
+            updatePlayerCounts(room);
             
             // Atualizar lista do host
             if (isHost) {
@@ -922,6 +983,11 @@
                 
                 // Habilitar botão de iniciar se houver pelo menos 2 jogadores
                 startGameBtn.disabled = players.length < 2;
+                if (players.length < 2) {
+                    startGameBtn.textContent = `Iniciar Jogo (mínimo 2 jogadores)`;
+                } else {
+                    startGameBtn.textContent = `Iniciar Jogo (${players.length} jogadores)`;
+                }
             }
             
             // Atualizar lista do jogador
@@ -963,12 +1029,12 @@
                 if (!room) {
                     // Sala não existe mais
                     clearInterval(roomUpdateInterval);
-                    alert("A sala foi fechada");
+                    alert("A sala foi fechada ou não existe mais.");
                     backToStart();
                     return;
                 }
                 
-                updatePlayersList();
+                updatePlayersList(room);
                 
                 // Verificar se o jogo começou
                 if (room.gameState === "playing" && gameState === "lobby") {
@@ -981,7 +1047,7 @@
                     gameState = "results";
                     showResults();
                 }
-            }, 1000);
+            }, 2000); // Atualizar a cada 2 segundos
         }
 
         // Iniciar o jogo (apenas anfitrião)
@@ -1010,13 +1076,17 @@
 
         function showQuestion() {
             const room = gameServer.getRoom(roomCode);
-            if (!room) return;
+            if (!room) {
+                alert("Erro: sala não encontrada. Voltando ao início.");
+                backToStart();
+                return;
+            }
             
             const playerScore = room.scores[playerName] || 0;
             currentLevel = getCurrentLevel(playerScore);
             
             // Selecionar perguntas do nível atual
-            questions = questionsByLevel[Math.min(currentLevel, 2)]; // Máximo nível 2 por enquanto
+            questions = questionsByLevel[Math.min(currentLevel, 2)];
             
             const questionIndex = currentQuestionIndex % questions.length;
             const question = questions[questionIndex];
@@ -1154,6 +1224,7 @@
             // Limpar intervalo de atualização
             if (roomUpdateInterval) {
                 clearInterval(roomUpdateInterval);
+                roomUpdateInterval = null;
             }
             
             // Resetar estado do jogo
@@ -1171,17 +1242,25 @@
             roomCreatedDiv.style.display = "none";
             joinedRoomDiv.style.display = "none";
             hideError();
+            
+            // Resetar variáveis
+            playerName = "";
+            roomCode = "";
+            isHost = false;
+            players = [];
         }
 
         // Event listeners
         hostBtn.addEventListener('click', () => {
             startScreen.classList.remove('active');
             hostScreen.classList.add('active');
+            hostNameInput.focus();
         });
         
         joinBtn.addEventListener('click', () => {
             startScreen.classList.remove('active');
             joinScreen.classList.add('active');
+            playerNameInput.focus();
         });
         
         createRoomBtn.addEventListener('click', hostGame);
@@ -1205,7 +1284,7 @@
         });
 
         // Focar automaticamente nos campos de entrada
-        hostNameInput.focus();
+        if (hostNameInput) hostNameInput.focus();
     </script>
 </body>
 </html>
