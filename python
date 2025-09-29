@@ -30,14 +30,23 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 # Fallback questions if external JSON not provided
 SAMPLE_QUESTIONS = {
     "facil": [
-        {"id": "f1", "pergunta": "Quem construiu a arca?", "opcoes": ["Moisés", "Noé", "Abraão"], "resposta": "Noé"},
-        {"id": "f2", "pergunta": "Qual é o primeiro livro da Bíblia?", "opcoes": ["Gênesis", "Êxodo", "Salmos"], "resposta": "Gênesis"}
+        {"id": "f1", "pergunta": "Quem construiu a arca?", "opcoes": ["Moisés", "Noé", "Abraão", "Josué"], "resposta": "Noé"},
+        {"id": "f2", "pergunta": "Qual é o primeiro livro da Bíblia?", "opcoes": ["Gênesis", "Êxodo", "Mateus", "Salmos"], "resposta": "Gênesis"},
+        {"id": "f3", "pergunta": "Quantos discípulos Jesus escolheu?", "opcoes": ["7", "12", "10", "15"], "resposta": "12"},
+        {"id": "f4", "pergunta": "Qual foi o primeiro milagre de Jesus?", "opcoes": ["Cura do cego", "Ressurreição de Lázaro", "Transformação de água em vinho", "Caminhar sobre as águas"], "resposta": "Transformação de água em vinho"},
+        {"id": "f5", "pergunta": "Quem foi jogado na cova dos leões?", "opcoes": ["José", "Davi", "Daniel", "Jonas"], "resposta": "Daniel"}
     ],
     "medio": [
-        {"id": "m1", "pergunta": "Quem interpretou os sonhos do Faraó no Egito?", "opcoes": ["Daniel", "José", "Moisés"], "resposta": "José"}
+        {"id": "m1", "pergunta": "Qual apóstolo era coletor de impostos antes de seguir Jesus?", "opcoes": ["Pedro", "João", "Mateus", "André"], "resposta": "Mateus"},
+        {"id": "m2", "pergunta": "Quem foi o primeiro mártir da igreja cristã?", "opcoes": ["Pedro", "Paulo", "Estêvão", "Tiago"], "resposta": "Estêvão"},
+        {"id": "m3", "pergunta": "Qual profeta foi engolido por um grande peixe?", "opcoes": ["Jeremias", "Isaías", "Jonas", "Ezequiel"], "resposta": "Jonas"},
+        {"id": "m4", "pergunta": "Quem interpretou o sonho de Faraó sobre as vacas magras e gordas?", "opcoes": ["Moisés", "José", "Daniel", "Salomão"], "resposta": "José"}
     ],
     "dificil": [
-        {"id": "d1", "pergunta": "Complete: 'Porque Deus amou o mundo de tal maneira que deu o seu ...'", "opcoes": ["Filho", "Louvor", "Dom"], "resposta": "Filho"}
+        {"id": "d1", "pergunta": "Quantos anos tinha Noé quando começou a chover para o dilúvio?", "opcoes": ["500 anos", "600 anos", "700 anos", "800 anos"], "resposta": "600 anos"},
+        {"id": "d2", "pergunta": "Qual apóstolo era conhecido como 'Zelote'?", "opcoes": ["Simão", "Judas Iscariotes", "Judas Tadeu", "Tiago"], "resposta": "Simão"},
+        {"id": "d3", "pergunta": "Em qual livro da Bíblia encontramos a história de Ester?", "opcoes": ["Rute", "Ester", "Esdras", "Neemias"], "resposta": "Ester"},
+        {"id": "d4", "pergunta": "Quem foi o pai de Isaque?", "opcoes": ["Abraão", "Jacó", "Ismael", "Esaú"], "resposta": "Abraão"}
     ]
 }
 
@@ -52,6 +61,22 @@ except Exception as e:
 
 LEVEL_POINTS = {"facil": 10, "medio": 20, "dificil": 30}
 STICKER_PROBS = {"comum": 0.70, "rara": 0.25, "lendaria": 0.05}
+
+# Figurinhas disponíveis
+FIGURINHAS = [
+    {"id": "1", "nome": "Pomba Branca", "categoria": "comum", "icon": "🕊️"},
+    {"id": "2", "nome": "Arca de Noé", "categoria": "comum", "icon": "🚢"},
+    {"id": "3", "nome": "Tábuas da Lei", "categoria": "comum", "icon": "📜"},
+    {"id": "4", "nome": "Cruz", "categoria": "comum", "icon": "✝️"},
+    {"id": "5", "nome": "Peixe Cristão", "categoria": "comum", "icon": "🐟"},
+    {"id": "6", "nome": "David com Harpa", "categoria": "rara", "icon": "🎵"},
+    {"id": "7", "nome": "Sansão", "categoria": "rara", "icon": "💪"},
+    {"id": "8", "nome": "Muro de Jericó", "categoria": "rara", "icon": "🧱"},
+    {"id": "9", "nome": "Maná do Céu", "categoria": "rara", "icon": "🍞"},
+    {"id": "10", "nome": "Arca da Aliança", "categoria": "lendaria", "icon": "📦"},
+    {"id": "11", "nome": "Ressurreição", "categoria": "lendaria", "icon": "✨"},
+    {"id": "12", "nome": "Transfiguração", "categoria": "lendaria", "icon": "🌟"}
+]
 
 # ---------------------- In-memory State ----------------------
 # players: store player info (pontuacao, figurinhas)
@@ -78,11 +103,12 @@ def draw_sticker():
     for cat, prob in STICKER_PROBS.items():
         cumulative += prob
         if r <= cumulative:
-            # create a simple sticker object
-            sticker = {"id": str(uuid.uuid4()), "nome": f"Figurinha {cat.capitalize()}", "categoria": cat}
-            return sticker
+            # Pick a random sticker from the category
+            available_stickers = [s for s in FIGURINHAS if s['categoria'] == cat]
+            if available_stickers:
+                return random.choice(available_stickers)
     # fallback
-    return {"id": str(uuid.uuid4()), "nome": "Figurinha Comum", "categoria": "comum"}
+    return FIGURINHAS[0]
 
 # ---------------------- API Endpoints (Solo) ----------------------
 @app.route('/start_solo', methods=['POST'])
@@ -127,13 +153,13 @@ def answer_solo():
     correct = (answer == q.get('resposta'))
     points = LEVEL_POINTS.get(session['level'], 0) if correct else 0
 
+    sticker = None
     if correct:
         players[player]['pontuacao'] += points
-        # sticker chance: on correct, 100% chance to attempt draw
-        sticker = draw_sticker()
-        players[player]['figurinhas'].append(sticker)
-    else:
-        sticker = None
+        # sticker chance: on correct, 50% chance to attempt draw
+        if random.random() < 0.5:
+            sticker = draw_sticker()
+            players[player]['figurinhas'].append(sticker)
 
     session['index'] += 1
     next_q = None
@@ -274,4 +300,10 @@ def health():
 # ---------------------- Run ----------------------
 if __name__ == '__main__':
     print('Starting Quiz Bíblico backend (Flask + SocketIO)')
-    socketio.run(app, host='0.0.0.0', port=5000)
+    print('Available endpoints:')
+    print('  POST /start_solo - Iniciar jogo solo')
+    print('  POST /answer_solo - Responder pergunta solo')
+    print('  GET /ranking - Ranking global')
+    print('  GET /album/<player> - Álbum do jogador')
+    print('  GET /health - Status do servidor')
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
