@@ -706,7 +706,14 @@
                 estadoJogo.jogador.acertosConsecutivos = 0;
             }
             
-            mostrarResultado(correta, pontos);
+            // Verificar se é a última pergunta
+            const ultimaPergunta = estadoJogo.perguntaNumero >= estadoJogo.totalPerguntas;
+            
+            if (ultimaPergunta) {
+                finalizarJogo();
+            } else {
+                mostrarResultado(correta, pontos);
+            }
         }
 
         function atualizarTempo() {
@@ -721,7 +728,15 @@
                 estadoJogo.perguntasRespondidas.push(estadoJogo.perguntaAtual.pergunta);
                 // Reseta o contador se o tempo acabar
                 estadoJogo.jogador.acertosConsecutivos = 0;
-                mostrarResultado(false, 0);
+                
+                // Verificar se é a última pergunta
+                const ultimaPergunta = estadoJogo.perguntaNumero >= estadoJogo.totalPerguntas;
+                
+                if (ultimaPergunta) {
+                    finalizarJogo();
+                } else {
+                    mostrarResultado(false, 0);
+                }
             }
         }
 
@@ -734,17 +749,9 @@
             // Atualizar contador antes de mostrar resultado
             atualizarContadorFigurinhas();
             
-            // Verificar se é a última pergunta
-            const ultimaPergunta = estadoJogo.perguntaNumero >= estadoJogo.totalPerguntas;
-            
-            if (ultimaPergunta) {
-                botoesProxima.style.display = 'none';
-                botoesFinal.style.display = 'flex';
-                estadoJogo.jogoFinalizado = true;
-            } else {
-                botoesProxima.style.display = 'flex';
-                botoesFinal.style.display = 'none';
-            }
+            // Sempre mostrar botões de próxima pergunta (não é a última)
+            botoesProxima.style.display = 'flex';
+            botoesFinal.style.display = 'none';
             
             if (correta) {
                 resultadoTexto.textContent = "Resposta Correta! +" + pontos + " pontos";
@@ -850,6 +857,7 @@
             document.getElementById('pontuacao-atual').textContent = estadoJogo.jogador.pontuacao;
             figurinhaContainer.style.display = 'none';
             
+            // Mostrar botões finais (Novo Jogo e Voltar ao Menu)
             botoesProxima.style.display = 'none';
             botoesFinal.style.display = 'flex';
             
