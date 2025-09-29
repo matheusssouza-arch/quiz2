@@ -73,6 +73,10 @@
             background: #6c757d;
         }
 
+        .btn-continuar {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+        }
+
         .titulo {
             text-align: center;
             margin-bottom: 30px;
@@ -286,6 +290,14 @@
             transition: width 0.5s ease;
         }
 
+        .botoes-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .container {
@@ -303,6 +315,11 @@
             .btn {
                 padding: 12px 24px;
                 font-size: 14px;
+            }
+
+            .botoes-container {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -338,7 +355,7 @@
             <div class="progresso-container">
                 <div class="progresso-texto">
                     <span>Pontuação: <strong id="pontuacao-atual-jogo">0</strong></span>
-                    <span>Pergunta <span id="pergunta-atual-numero">1</span>/<span id="total-perguntas">5</span></span>
+                    <span>Pergunta <span id="pergunta-atual-numero">1</span>/<span id="total-perguntas">10</span></span>
                 </div>
                 <div class="progresso-bar">
                     <div class="progresso-fill" id="progresso-perguntas" style="width: 0%"></div>
@@ -387,8 +404,16 @@
                     <h3>🎉 Parabéns! Você ganhou uma figurinha!</h3>
                     <div id="figurinha-ganha-info" class="figurinha-card"></div>
                 </div>
-                <button id="btn-proxima-pergunta" class="btn">Próxima Pergunta</button>
-                <button class="btn btn-voltar voltar-btn">Finalizar Jogo</button>
+
+                <div id="botoes-proxima" class="botoes-container">
+                    <button id="btn-proxima-pergunta" class="btn btn-continuar">Próxima Pergunta</button>
+                    <button class="btn btn-voltar">Voltar ao Menu</button>
+                </div>
+
+                <div id="botoes-final" class="botoes-container" style="display: none;">
+                    <button id="btn-novo-jogo" class="btn btn-continuar">Novo Jogo</button>
+                    <button class="btn btn-voltar">Voltar ao Menu</button>
+                </div>
             </div>
         </div>
 
@@ -463,6 +488,11 @@
                     "pergunta": "Qual é o menor livro da Bíblia?",
                     "opcoes": ["Salmos", "João", "III João", "Filemom"],
                     "resposta": "III João"
+                },
+                {
+                    "pergunta": "Quantos mandamentos Deus deu a Moisés?",
+                    "opcoes": ["7", "10", "12", "15"],
+                    "resposta": "10"
                 }
             ],
             "medio": [
@@ -553,7 +583,8 @@
             intervalo: null,
             opcaoSelecionada: null,
             perguntaNumero: 0,
-            totalPerguntas: 10
+            totalPerguntas: 10,
+            jogoFinalizado: false
         };
 
         // Elementos da interface
@@ -609,6 +640,7 @@
             estadoJogo.jogador.acertosConsecutivos = 0;
             estadoJogo.perguntaNumero = 0;
             estadoJogo.totalPerguntas = 10;
+            estadoJogo.jogoFinalizado = false;
             atualizarContadorFigurinhas();
             carregarPergunta();
             mostrarTela(telaPergunta);
@@ -633,6 +665,7 @@
                 p => !estadoJogo.perguntasRespondidas.includes(p.pergunta)
             );
             
+            // Verificar se é a última pergunta
             if (perguntasDisponiveis.length === 0 || estadoJogo.perguntaNumero > estadoJogo.totalPerguntas) {
                 finalizarJogo();
                 return;
@@ -725,9 +758,23 @@
         function mostrarResultado(correta, pontos) {
             const resultadoTexto = document.getElementById('resultado-texto');
             const figurinhaContainer = document.getElementById('figurinha-ganha-container');
+            const botoesProxima = document.getElementById('botoes-proxima');
+            const botoesFinal = document.getElementById('botoes-final');
             
             // Atualizar contador antes de mostrar resultado
             atualizarContadorFigurinhas();
+            
+            // Verificar se é a última pergunta
+            const ultimaPergunta = estadoJogo.perguntaNumero >= estadoJogo.totalPerguntas;
+            
+            if (ultimaPergunta) {
+                botoesProxima.style.display = 'none';
+                botoesFinal.style.display = 'flex';
+                estadoJogo.jogoFinalizado = true;
+            } else {
+                botoesProxima.style.display = 'flex';
+                botoesFinal.style.display = 'none';
+            }
             
             if (correta) {
                 resultadoTexto.textContent = "Resposta Correta! +" + pontos + " pontos";
@@ -821,9 +868,22 @@
         }
 
         function finalizarJogo() {
-            alert(`Parabéns! Você completou o jogo com ${estadoJogo.jogador.pontuacao} pontos!`);
-            mostrarTela(telaInicial);
-            resetarJogo();
+            estadoJogo.jogoFinalizado = true;
+            const resultadoTexto = document.getElementById('resultado-texto');
+            const figurinhaContainer = document.getElementById('figurinha-ganha-container');
+            const botoesProxima = document.getElementById('botoes-proxima');
+            const botoesFinal = document.getElementById('botoes-final');
+            
+            resultadoTexto.textContent = "🎉 Parabéns! Você completou todas as perguntas!";
+            resultadoTexto.className = "resultado-acerto";
+            
+            document.getElementById('pontuacao-atual').textContent = estadoJogo.jogador.pontuacao;
+            figurinhaContainer.style.display = 'none';
+            
+            botoesProxima.style.display = 'none';
+            botoesFinal.style.display = 'flex';
+            
+            mostrarTela(telaResultado);
         }
 
         // Carregar ranking
@@ -891,6 +951,7 @@
             estadoJogo.tempoRestante = 30;
             estadoJogo.opcaoSelecionada = null;
             estadoJogo.perguntaNumero = 0;
+            estadoJogo.jogoFinalizado = false;
             // Não resetar acertosConsecutivos para manter o progresso entre jogos
         }
 
@@ -934,8 +995,23 @@
 
         // Próxima pergunta
         document.getElementById('btn-proxima-pergunta').addEventListener('click', () => {
-            carregarPergunta();
-            mostrarTela(telaPergunta);
+            if (!estadoJogo.jogoFinalizado) {
+                carregarPergunta();
+                mostrarTela(telaPergunta);
+            }
+        });
+
+        // Novo jogo
+        document.getElementById('btn-novo-jogo').addEventListener('click', () => {
+            iniciarJogoSolo();
+        });
+
+        // Voltar ao menu (na tela de resultado)
+        document.querySelectorAll('#tela-resultado .btn-voltar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                mostrarTela(telaInicial);
+                resetarJogo();
+            });
         });
 
         // Inicialização
