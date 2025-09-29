@@ -258,6 +258,34 @@
             transition: width 0.5s ease;
         }
 
+        .contador-figurinhas {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .contador-figurinhas h4 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .contador-progresso {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .contador-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transition: width 0.5s ease;
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .container {
@@ -285,6 +313,7 @@
         <div id="tela-inicial" class="tela ativa">
             <h1 class="titulo">📖 Quiz Bíblico</h1>
             <p class="subtitulo">Teste seu conhecimento da Bíblia e colete figurinhas!</p>
+            <p class="subtitulo">Acumule 6 acertos para ganhar uma figurinha</p>
             
             <div style="text-align: center; margin-top: 40px;">
                 <button id="btn-solo" class="btn">🎮 Iniciar Jogo</button>
@@ -316,6 +345,15 @@
                 </div>
             </div>
 
+            <div class="contador-figurinhas">
+                <h4>🎯 Progresso para Próxima Figurinha</h4>
+                <div>Acertos: <strong id="acertos-atual">0</strong>/6</div>
+                <div class="contador-progresso">
+                    <div class="contador-fill" id="progresso-figurinha" style="width: 0%"></div>
+                </div>
+                <small>Você precisa de 6 acertos consecutivos para ganhar uma figurinha!</small>
+            </div>
+
             <div class="pergunta-container">
                 <div class="texto-pergunta" id="texto-pergunta"></div>
                 <div class="barra-tempo">
@@ -336,8 +374,17 @@
                 <div style="margin: 20px 0;">
                     <strong>Pontuação atual: <span id="pontuacao-atual">0</span> pontos</strong>
                 </div>
+                
+                <div class="contador-figurinhas">
+                    <h4>🎯 Progresso para Figurinha</h4>
+                    <div>Acertos consecutivos: <strong id="acertos-resultado">0</strong>/6</div>
+                    <div class="contador-progresso">
+                        <div class="contador-fill" id="progresso-figurinha-resultado" style="width: 0%"></div>
+                    </div>
+                </div>
+
                 <div id="figurinha-ganha-container" style="display: none; margin: 20px 0;">
-                    <h3>🎉 Nova Figurinha!</h3>
+                    <h3>🎉 Parabéns! Você ganhou uma figurinha!</h3>
                     <div id="figurinha-ganha-info" class="figurinha-card"></div>
                 </div>
                 <button id="btn-proxima-pergunta" class="btn">Próxima Pergunta</button>
@@ -406,6 +453,16 @@
                     "pergunta": "Qual animal falou com Balaão?",
                     "opcoes": ["Cobra", "Leão", "Jumenta", "Cordeiro"],
                     "resposta": "Jumenta"
+                },
+                {
+                    "pergunta": "Quem foi o primeiro rei de Israel?",
+                    "opcoes": ["Davi", "Salomão", "Saul", "Josué"],
+                    "resposta": "Saul"
+                },
+                {
+                    "pergunta": "Qual é o menor livro da Bíblia?",
+                    "opcoes": ["Salmos", "João", "III João", "Filemom"],
+                    "resposta": "III João"
                 }
             ],
             "medio": [
@@ -485,7 +542,8 @@
                 id: null,
                 nome: "Jogador",
                 pontuacao: 0,
-                figurinhas: []
+                figurinhas: [],
+                acertosConsecutivos: 0
             },
             modo: null,
             dificuldade: null,
@@ -495,7 +553,7 @@
             intervalo: null,
             opcaoSelecionada: null,
             perguntaNumero: 0,
-            totalPerguntas: 5
+            totalPerguntas: 10
         };
 
         // Elementos da interface
@@ -548,10 +606,23 @@
         function iniciarJogoSolo() {
             estadoJogo.perguntasRespondidas = [];
             estadoJogo.jogador.pontuacao = 0;
+            estadoJogo.jogador.acertosConsecutivos = 0;
             estadoJogo.perguntaNumero = 0;
-            estadoJogo.totalPerguntas = 5;
+            estadoJogo.totalPerguntas = 10;
+            atualizarContadorFigurinhas();
             carregarPergunta();
             mostrarTela(telaPergunta);
+        }
+
+        // Atualizar contador de figurinhas
+        function atualizarContadorFigurinhas() {
+            const acertos = estadoJogo.jogador.acertosConsecutivos;
+            const progresso = (acertos / 6) * 100;
+            
+            document.getElementById('acertos-atual').textContent = acertos;
+            document.getElementById('acertos-resultado').textContent = acertos;
+            document.getElementById('progresso-figurinha').style.width = `${progresso}%`;
+            document.getElementById('progresso-figurinha-resultado').style.width = `${progresso}%`;
         }
 
         // Carregar pergunta aleatória
@@ -626,6 +697,10 @@
                     case 'dificil': pontos = 30; break;
                 }
                 estadoJogo.jogador.pontuacao += pontos;
+                estadoJogo.jogador.acertosConsecutivos++;
+            } else {
+                // Reseta o contador de acertos consecutivos se errar
+                estadoJogo.jogador.acertosConsecutivos = 0;
             }
             
             mostrarResultado(correta, pontos);
@@ -641,6 +716,8 @@
             if (estadoJogo.tempoRestante <= 0) {
                 clearInterval(estadoJogo.intervalo);
                 estadoJogo.perguntasRespondidas.push(estadoJogo.perguntaAtual.pergunta);
+                // Reseta o contador se o tempo acabar
+                estadoJogo.jogador.acertosConsecutivos = 0;
                 mostrarResultado(false, 0);
             }
         }
@@ -649,12 +726,15 @@
             const resultadoTexto = document.getElementById('resultado-texto');
             const figurinhaContainer = document.getElementById('figurinha-ganha-container');
             
+            // Atualizar contador antes de mostrar resultado
+            atualizarContadorFigurinhas();
+            
             if (correta) {
                 resultadoTexto.textContent = "Resposta Correta! +" + pontos + " pontos";
                 resultadoTexto.className = "resultado-acerto";
                 
-                // 50% de chance de ganhar figurinha ao acertar
-                if (Math.random() < 0.5) {
+                // Verificar se atingiu 6 acertos consecutivos
+                if (estadoJogo.jogador.acertosConsecutivos >= 6) {
                     const figurinha = ganharFigurinha();
                     if (figurinha) {
                         figurinhaContainer.style.display = 'block';
@@ -664,6 +744,10 @@
                             <div class="figurinha-categoria ${figurinha.categoria}">${figurinha.categoria}</div>
                         `;
                         document.getElementById('figurinha-ganha-info').className = `figurinha-card ${figurinha.categoria}`;
+                        
+                        // Resetar contador após ganhar figurinha
+                        estadoJogo.jogador.acertosConsecutivos = 0;
+                        atualizarContadorFigurinhas();
                     } else {
                         figurinhaContainer.style.display = 'none';
                     }
@@ -713,7 +797,18 @@
             );
             
             if (figurinhasDisponiveis.length === 0) {
-                return null;
+                // Se não há figurinhas disponíveis na categoria, tenta outra categoria
+                const todasDisponiveis = figurinhas.filter(f => 
+                    !estadoJogo.jogador.figurinhas.some(jf => jf.nome === f.nome)
+                );
+                if (todasDisponiveis.length === 0) {
+                    return null; // Já tem todas as figurinhas
+                }
+                const indiceAleatorio = Math.floor(Math.random() * todasDisponiveis.length);
+                const figurinha = todasDisponiveis[indiceAleatorio];
+                estadoJogo.jogador.figurinhas.push(figurinha);
+                salvarDados();
+                return figurinha;
             }
             
             const indiceAleatorio = Math.floor(Math.random() * figurinhasDisponiveis.length);
@@ -770,7 +865,7 @@
             albumContainer.innerHTML = '';
             
             if (estadoJogo.jogador.figurinhas.length === 0) {
-                albumContainer.innerHTML = '<div class="vazia">Você ainda não possui figurinhas. Jogue para coletar!</div>';
+                albumContainer.innerHTML = '<div class="vazia">Você ainda não possui figurinhas. Acumule 6 acertos consecutivos para ganhar uma!</div>';
                 return;
             }
             
@@ -796,6 +891,7 @@
             estadoJogo.tempoRestante = 30;
             estadoJogo.opcaoSelecionada = null;
             estadoJogo.perguntaNumero = 0;
+            // Não resetar acertosConsecutivos para manter o progresso entre jogos
         }
 
         // Salvar dados no localStorage
@@ -809,6 +905,10 @@
             if (dadosSalvos) {
                 const dados = JSON.parse(dadosSalvos);
                 estadoJogo.jogador = { ...estadoJogo.jogador, ...dados };
+                // Garantir que acertosConsecutivos existe
+                if (!estadoJogo.jogador.acertosConsecutivos) {
+                    estadoJogo.jogador.acertosConsecutivos = 0;
+                }
             }
         }
 
@@ -844,8 +944,12 @@
             
             if (!estadoJogo.jogador.id) {
                 estadoJogo.jogador.id = 'jogador_' + Date.now();
+                estadoJogo.jogador.acertosConsecutivos = 0;
                 salvarDados();
             }
+            
+            // Atualizar contador na inicialização
+            atualizarContadorFigurinhas();
         });
     </script>
 </body>
