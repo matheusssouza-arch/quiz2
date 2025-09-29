@@ -192,22 +192,6 @@
             margin-bottom: 10px;
         }
 
-        /* Ranking */
-        .ranking-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            background: #f8f9fa;
-            margin: 5px 0;
-            border-radius: 8px;
-        }
-
-        .ranking-posicao {
-            font-weight: bold;
-            color: #667eea;
-        }
-
         .vazia {
             text-align: center;
             color: #666;
@@ -334,7 +318,6 @@
             
             <div style="text-align: center; margin-top: 40px;">
                 <button id="btn-solo" class="btn">🎮 Iniciar Jogo</button>
-                <button id="btn-ranking" class="btn">🏆 Ranking</button>
                 <button id="btn-album" class="btn">📒 Álbum de Figurinhas</button>
             </div>
         </div>
@@ -415,13 +398,6 @@
                     <button class="btn btn-voltar">Voltar ao Menu</button>
                 </div>
             </div>
-        </div>
-
-        <!-- Tela Ranking -->
-        <div id="tela-ranking" class="tela">
-            <h2 class="titulo">🏆 Ranking</h2>
-            <div id="ranking-container"></div>
-            <button class="btn btn-voltar voltar-btn" style="margin-top: 20px;">← Voltar</button>
         </div>
 
         <!-- Tela Álbum -->
@@ -593,7 +569,6 @@
         const telaDificuldade = document.getElementById('tela-dificuldade');
         const telaPergunta = document.getElementById('tela-pergunta');
         const telaResultado = document.getElementById('tela-resultado');
-        const telaRanking = document.getElementById('tela-ranking');
         const telaAlbum = document.getElementById('tela-album');
 
         // Funções de navegação
@@ -606,11 +581,6 @@
         document.getElementById('btn-solo').addEventListener('click', () => {
             estadoJogo.modo = 'solo';
             mostrarTela(telaDificuldade);
-        });
-
-        document.getElementById('btn-ranking').addEventListener('click', () => {
-            carregarRanking();
-            mostrarTela(telaRanking);
         });
 
         document.getElementById('btn-album').addEventListener('click', () => {
@@ -884,39 +854,6 @@
             botoesFinal.style.display = 'flex';
             
             mostrarTela(telaResultado);
-        }
-
-        // Carregar ranking
-        function carregarRanking() {
-            const ranking = [
-                { nome: "Maria", pontuacao: 150 },
-                { nome: "João", pontuacao: 120 },
-                { nome: "Pedro", pontuacao: 100 },
-                { nome: "Ana", pontuacao: 90 },
-                { nome: "José", pontuacao: 80 },
-                { nome: estadoJogo.jogador.nome, pontuacao: estadoJogo.jogador.pontuacao }
-            ].sort((a, b) => b.pontuacao - a.pontuacao);
-            
-            const rankingContainer = document.getElementById('ranking-container');
-            rankingContainer.innerHTML = '';
-            
-            ranking.forEach((jogador, index) => {
-                const divRanking = document.createElement('div');
-                divRanking.className = 'ranking-item';
-                divRanking.innerHTML = `
-                    <div>
-                        <span class="ranking-posicao">${index + 1}º</span> 
-                        ${jogador.nome}
-                    </div>
-                    <div>${jogador.pontuacao} pontos</div>
-                `;
-                
-                if (jogador.nome === estadoJogo.jogador.nome) {
-                    divRanking.style.backgroundColor = 'rgba(74, 144, 226, 0.3)';
-                }
-                
-                rankingContainer.appendChild(divRanking);
-            });
         }
 
         // Carregar álbum
