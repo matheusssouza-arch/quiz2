@@ -3,19 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Bíblico - Multiplayer</title>
+    <title>Quiz Bíblico - Individual</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* ... (todo o CSS permanece igual) ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tela {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .tela.ativa {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-voltar {
+            background: #6c757d;
+        }
+
+        .titulo {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .subtitulo {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* Estilos para perguntas e opções */
+        .pergunta-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .texto-pergunta {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #333;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .opcoes-container {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .opcao {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .opcao:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .opcao.selecionada {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Barra de tempo */
+        .barra-tempo {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .barra-progresso {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 1s linear;
+        }
+
+        /* Resultados */
+        .resultado-acerto {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .resultado-erro {
+            color: #f44336;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        /* Figurinhas */
+        .figurinha-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px;
+            display: inline-block;
+            width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .figurinha-card.comum {
+            border-color: #4CAF50;
+            background: #E8F5E8;
+        }
+
+        .figurinha-card.rara {
+            border-color: #2196F3;
+            background: #E3F2FD;
+        }
+
+        .figurinha-card.lendaria {
+            border-color: #FF9800;
+            background: #FFF3E0;
+        }
+
+        .figurinha-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        /* Ranking */
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+            margin: 5px 0;
+            border-radius: 8px;
+        }
+
+        .ranking-posicao {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .vazia {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .filtros {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .filtro-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filtro-btn.ativo {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .progresso-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progresso-texto {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .progresso-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progresso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.5s ease;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .tela {
+                padding: 20px;
+            }
+            
+            .texto-pergunta {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ... (todo o HTML permanece igual) ... -->
+        <!-- Tela Inicial -->
+        <div id="tela-inicial" class="tela ativa">
+            <h1 class="titulo">📖 Quiz Bíblico</h1>
+            <p class="subtitulo">Teste seu conhecimento da Bíblia e colete figurinhas!</p>
+            
+            <div style="text-align: center; margin-top: 40px;">
+                <button id="btn-solo" class="btn">🎮 Iniciar Jogo</button>
+                <button id="btn-ranking" class="btn">🏆 Ranking</button>
+                <button id="btn-album" class="btn">📒 Álbum de Figurinhas</button>
+            </div>
+        </div>
+
+        <!-- Tela Dificuldade -->
+        <div id="tela-dificuldade" class="tela">
+            <h2 class="titulo">Escolha a Dificuldade</h2>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn dificuldade-btn" data-dificuldade="facil">😊 Fácil (10 pontos)</button>
+                <button class="btn dificuldade-btn" data-dificuldade="medio">😐 Médio (20 pontos)</button>
+                <button class="btn dificuldade-btn" data-dificuldade="dificil">😰 Difícil (30 pontos)</button>
+            </div>
+            <button class="btn btn-voltar voltar-btn" style="margin-top: 20px;">← Voltar</button>
+        </div>
+
+        <!-- Tela Pergunta -->
+        <div id="tela-pergunta" class="tela">
+            <div class="progresso-container">
+                <div class="progresso-texto">
+                    <span>Pontuação: <strong id="pontuacao-atual-jogo">0</strong></span>
+                    <span>Pergunta <span id="pergunta-atual-numero">1</span>/<span id="total-perguntas">5</span></span>
+                </div>
+                <div class="progresso-bar">
+                    <div class="progresso-fill" id="progresso-perguntas" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="pergunta-container">
+                <div class="texto-pergunta" id="texto-pergunta"></div>
+                <div class="barra-tempo">
+                    <div class="barra-progresso" id="barra-progresso" style="width: 100%"></div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <strong>Tempo restante: <span id="tempo-restante">30</span>s</strong>
+                </div>
+                <div class="opcoes-container" id="opcoes-container"></div>
+                <button id="btn-confirmar" class="btn" disabled>Confirmar Resposta</button>
+            </div>
+        </div>
+
+        <!-- Tela Resultado -->
+        <div id="tela-resultado" class="tela">
+            <div style="text-align: center;">
+                <div id="resultado-texto" class="resultado-acerto"></div>
+                <div style="margin: 20px 0;">
+                    <strong>Pontuação atual: <span id="pontuacao-atual">0</span> pontos</strong>
+                </div>
+                <div id="figurinha-ganha-container" style="display: none; margin: 20px 0;">
+                    <h3>🎉 Nova Figurinha!</h3>
+                    <div id="figurinha-ganha-info" class="figurinha-card"></div>
+                </div>
+                <button id="btn-proxima-pergunta" class="btn">Próxima Pergunta</button>
+                <button class="btn btn-voltar voltar-btn">Finalizar Jogo</button>
+            </div>
+        </div>
+
+        <!-- Tela Ranking -->
+        <div id="tela-ranking" class="tela">
+            <h2 class="titulo">🏆 Ranking</h2>
+            <div id="ranking-container"></div>
+            <button class="btn btn-voltar voltar-btn" style="margin-top: 20px;">← Voltar</button>
+        </div>
+
+        <!-- Tela Álbum -->
+        <div id="tela-album" class="tela">
+            <h2 class="titulo">📒 Meu Álbum de Figurinhas</h2>
+            
+            <div class="filtros">
+                <button class="filtro-btn ativo" data-categoria="todas">Todas</button>
+                <button class="filtro-btn" data-categoria="comum">Comuns</button>
+                <button class="filtro-btn" data-categoria="rara">Raras</button>
+                <button class="filtro-btn" data-categoria="lendaria">Lendárias</button>
+            </div>
+            
+            <div id="album-container"></div>
+            <button class="btn btn-voltar voltar-btn" style="margin-top: 20px;">← Voltar</button>
+        </div>
     </div>
 
     <script>
-        // Dados do jogo (permanecem iguais)
+        // Dados do jogo
         const perguntas = {
             "facil": [
                 {
@@ -42,6 +396,16 @@
                     "pergunta": "Qual é o primeiro livro da Bíblia?",
                     "opcoes": ["Êxodo", "Gênesis", "Mateus", "Salmos"],
                     "resposta": "Gênesis"
+                },
+                {
+                    "pergunta": "Quem traiu Jesus?",
+                    "opcoes": ["Pedro", "João", "Judas", "Tomé"],
+                    "resposta": "Judas"
+                },
+                {
+                    "pergunta": "Qual animal falou com Balaão?",
+                    "opcoes": ["Cobra", "Leão", "Jumenta", "Cordeiro"],
+                    "resposta": "Jumenta"
                 }
             ],
             "medio": [
@@ -64,6 +428,11 @@
                     "pergunta": "Quem interpretou o sonho de Faraó sobre as vacas magras e gordas?",
                     "opcoes": ["Moisés", "José", "Daniel", "Salomão"],
                     "resposta": "José"
+                },
+                {
+                    "pergunta": "Quantos anos tinha Josué quando morreu?",
+                    "opcoes": ["100 anos", "110 anos", "120 anos", "130 anos"],
+                    "resposta": "110 anos"
                 }
             ],
             "dificil": [
@@ -86,6 +455,11 @@
                     "pergunta": "Quem foi o pai de Isaque?",
                     "opcoes": ["Abraão", "Jacó", "Ismael", "Esaú"],
                     "resposta": "Abraão"
+                },
+                {
+                    "pergunta": "Quantos filhos teve Jacó?",
+                    "opcoes": ["10", "12", "13", "14"],
+                    "resposta": "12"
                 }
             ]
         };
@@ -105,11 +479,6 @@
             { nome: "Transfiguração", categoria: "lendaria", icon: "🌟" }
         ];
 
-        // Simulação do Backend com Socket.IO (permanece igual)
-        class SocketIOSimulado {
-            // ... (todo o código da classe SocketIOSimulado permanece igual) ...
-        }
-
         // Estado do jogo
         let estadoJogo = {
             jogador: {
@@ -125,116 +494,29 @@
             tempoRestante: 30,
             intervalo: null,
             opcaoSelecionada: null,
-            sala: null,
-            socket: null
+            perguntaNumero: 0,
+            totalPerguntas: 5
         };
 
-        // Inicializar socket simulado
-        estadoJogo.socket = new SocketIOSimulado();
-
-        // Elementos da interface (permanecem iguais)
+        // Elementos da interface
         const telas = document.querySelectorAll('.tela');
         const telaInicial = document.getElementById('tela-inicial');
         const telaDificuldade = document.getElementById('tela-dificuldade');
         const telaPergunta = document.getElementById('tela-pergunta');
         const telaResultado = document.getElementById('tela-resultado');
-        const telaMultiplayer = document.getElementById('tela-multiplayer');
-        const telaEntrarSala = document.getElementById('tela-entrar-sala');
-        const telaSala = document.getElementById('tela-sala');
-        const telaPerguntaMultiplayer = document.getElementById('tela-pergunta-multiplayer');
-        const telaResultadoMultiplayer = document.getElementById('tela-resultado-multiplayer');
         const telaRanking = document.getElementById('tela-ranking');
         const telaAlbum = document.getElementById('tela-album');
 
-        // Configurar listeners do socket (permanecem iguais)
-        estadoJogo.socket.on('salaCriada', (dados) => {
-            estadoJogo.sala = dados.sala;
-            atualizarTelaSala();
-            mostrarTela(telaSala);
-        });
-
-        estadoJogo.socket.on('entradaConfirmada', (dados) => {
-            estadoJogo.sala = dados.sala;
-            atualizarTelaSala();
-            mostrarTela(telaSala);
-        });
-
-        estadoJogo.socket.on('erroEntrada', (dados) => {
-            alert(dados.mensagem);
-        });
-
-        estadoJogo.socket.on('jogadoresAtualizados', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                estadoJogo.sala.jogadores = dados.jogadores;
-                estadoJogo.sala.dono = dados.dono;
-                atualizarTelaSala();
-            }
-        });
-
-        estadoJogo.socket.on('novoJogador', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                adicionarMensagemSistema(`${dados.jogador.nome} entrou na sala`);
-            }
-        });
-
-        estadoJogo.socket.on('jogadorSaiu', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                adicionarMensagemSistema('Um jogador saiu da sala');
-            }
-        });
-
-        estadoJogo.socket.on('jogoIniciado', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                document.getElementById('aguardando-inicio').style.display = 'none';
-                adicionarMensagemSistema('Jogo iniciando...');
-            }
-        });
-
-        estadoJogo.socket.on('novaPergunta', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                estadoJogo.sala.perguntaAtual = dados.pergunta;
-                estadoJogo.sala.rodadaAtual = dados.rodada;
-                estadoJogo.sala.tempoRestante = 15;
-                carregarPerguntaMultiplayer(dados.pergunta, dados.rodada, dados.totalRodadas);
-                mostrarTela(telaPerguntaMultiplayer);
-            }
-        });
-
-        estadoJogo.socket.on('tempoAtualizado', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                document.getElementById('tempo-restante-multi').textContent = dados.tempoRestante;
-                const progresso = (dados.tempoRestante / 15) * 100;
-                document.getElementById('barra-progresso-multi').style.width = `${progresso}%`;
-            }
-        });
-
-        estadoJogo.socket.on('respostaRegistrada', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                atualizarRankingSala();
-            }
-        });
-
-        estadoJogo.socket.on('rodadaFinalizada', (dados) => {
-            if (estadoJogo.sala && estadoJogo.sala.id === dados.salaId) {
-                mostrarResultadoMultiplayer(dados);
-            }
-        });
-
-        // Funções de navegação (permanecem iguais)
+        // Funções de navegação
         function mostrarTela(tela) {
             telas.forEach(t => t.classList.remove('ativa'));
             tela.classList.add('ativa');
         }
 
-        // Event listeners para navegação (permanecem iguais)
+        // Event listeners para navegação
         document.getElementById('btn-solo').addEventListener('click', () => {
             estadoJogo.modo = 'solo';
             mostrarTela(telaDificuldade);
-        });
-
-        document.getElementById('btn-multiplayer').addEventListener('click', () => {
-            estadoJogo.modo = 'multiplayer';
-            mostrarTela(telaMultiplayer);
         });
 
         document.getElementById('btn-ranking').addEventListener('click', () => {
@@ -249,18 +531,12 @@
 
         document.querySelectorAll('.voltar-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (estadoJogo.sala) {
-                    estadoJogo.socket.emit('sairSala', {
-                        jogadorId: estadoJogo.jogador.id
-                    });
-                    estadoJogo.sala = null;
-                }
                 mostrarTela(telaInicial);
                 resetarJogo();
             });
         });
 
-        // Modo Solo - Seleção de dificuldade (permanece igual)
+        // Seleção de dificuldade
         document.querySelectorAll('.dificuldade-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 estadoJogo.dificuldade = e.target.dataset.dificuldade;
@@ -268,23 +544,26 @@
             });
         });
 
-        // Modo Solo - Iniciar jogo (permanece igual)
+        // Iniciar jogo
         function iniciarJogoSolo() {
             estadoJogo.perguntasRespondidas = [];
             estadoJogo.jogador.pontuacao = 0;
+            estadoJogo.perguntaNumero = 0;
+            estadoJogo.totalPerguntas = 5;
             carregarPergunta();
             mostrarTela(telaPergunta);
         }
 
-        // Carregar pergunta aleatória (Solo) - permanece igual
+        // Carregar pergunta aleatória
         function carregarPergunta() {
+            estadoJogo.perguntaNumero++;
+            
             const perguntasDisponiveis = perguntas[estadoJogo.dificuldade].filter(
                 p => !estadoJogo.perguntasRespondidas.includes(p.pergunta)
             );
             
-            if (perguntasDisponiveis.length === 0) {
-                alert('Parabéns! Você completou todas as perguntas deste nível!');
-                mostrarTela(telaInicial);
+            if (perguntasDisponiveis.length === 0 || estadoJogo.perguntaNumero > estadoJogo.totalPerguntas) {
+                finalizarJogo();
                 return;
             }
             
@@ -292,6 +571,12 @@
             estadoJogo.perguntaAtual = perguntasDisponiveis[indiceAleatorio];
             
             document.getElementById('texto-pergunta').textContent = estadoJogo.perguntaAtual.pergunta;
+            document.getElementById('pontuacao-atual-jogo').textContent = estadoJogo.jogador.pontuacao;
+            document.getElementById('pergunta-atual-numero').textContent = estadoJogo.perguntaNumero;
+            document.getElementById('total-perguntas').textContent = estadoJogo.totalPerguntas;
+            
+            const progresso = ((estadoJogo.perguntaNumero - 1) / estadoJogo.totalPerguntas) * 100;
+            document.getElementById('progresso-perguntas').style.width = `${progresso}%`;
             
             const opcoesContainer = document.getElementById('opcoes-container');
             opcoesContainer.innerHTML = '';
@@ -308,9 +593,7 @@
             document.getElementById('btn-confirmar').disabled = true;
             estadoJogo.tempoRestante = 30;
             document.getElementById('tempo-restante').textContent = estadoJogo.tempoRestante;
-            
-            const progresso = (estadoJogo.perguntasRespondidas.length / perguntas[estadoJogo.dificuldade].length) * 100;
-            document.getElementById('barra-progresso').style.width = `${progresso}%`;
+            document.getElementById('barra-progresso').style.width = '100%';
             
             clearInterval(estadoJogo.intervalo);
             estadoJogo.intervalo = setInterval(atualizarTempo, 1000);
@@ -352,6 +635,9 @@
             estadoJogo.tempoRestante--;
             document.getElementById('tempo-restante').textContent = estadoJogo.tempoRestante;
             
+            const progresso = (estadoJogo.tempoRestante / 30) * 100;
+            document.getElementById('barra-progresso').style.width = `${progresso}%`;
+            
             if (estadoJogo.tempoRestante <= 0) {
                 clearInterval(estadoJogo.intervalo);
                 estadoJogo.perguntasRespondidas.push(estadoJogo.perguntaAtual.pergunta);
@@ -364,9 +650,10 @@
             const figurinhaContainer = document.getElementById('figurinha-ganha-container');
             
             if (correta) {
-                resultadoTexto.textContent = "Resposta Correta!";
+                resultadoTexto.textContent = "Resposta Correta! +" + pontos + " pontos";
                 resultadoTexto.className = "resultado-acerto";
                 
+                // 50% de chance de ganhar figurinha ao acertar
                 if (Math.random() < 0.5) {
                     const figurinha = ganharFigurinha();
                     if (figurinha) {
@@ -374,8 +661,9 @@
                         document.getElementById('figurinha-ganha-info').innerHTML = `
                             <div class="figurinha-icon">${figurinha.icon}</div>
                             <div class="figurinha-nome">${figurinha.nome}</div>
-                            <div class="figurinha-categoria">${figurinha.categoria}</div>
+                            <div class="figurinha-categoria ${figurinha.categoria}">${figurinha.categoria}</div>
                         `;
+                        document.getElementById('figurinha-ganha-info').className = `figurinha-card ${figurinha.categoria}`;
                     } else {
                         figurinhaContainer.style.display = 'none';
                     }
@@ -383,7 +671,7 @@
                     figurinhaContainer.style.display = 'none';
                 }
             } else {
-                resultadoTexto.textContent = "Resposta Incorreta!";
+                resultadoTexto.textContent = "Resposta Incorreta! A resposta correta era: " + estadoJogo.perguntaAtual.resposta;
                 resultadoTexto.className = "resultado-erro";
                 figurinhaContainer.style.display = 'none';
             }
@@ -392,7 +680,7 @@
             mostrarTela(telaResultado);
         }
 
-        // FUNÇÃO COMPLETADA: Ganhar figurinha
+        // Ganhar figurinha
         function ganharFigurinha() {
             let probComum = 0.7;
             let probRara = 0.25;
@@ -432,224 +720,18 @@
             const figurinha = figurinhasDisponiveis[indiceAleatorio];
             
             estadoJogo.jogador.figurinhas.push(figurinha);
+            salvarDados();
             
             return figurinha;
         }
 
-        // Modo Multiplayer (permanece igual)
-        document.getElementById('btn-criar-sala').addEventListener('click', criarSala);
-        document.getElementById('btn-entrar-sala').addEventListener('click', () => {
-            mostrarTela(telaEntrarSala);
-        });
-
-        document.getElementById('btn-confirmar-entrada').addEventListener('click', entrarSala);
-
-        function criarSala() {
-            if (!estadoJogo.jogador.id) {
-                estadoJogo.jogador.id = 'jogador_' + Date.now();
-            }
-            
-            estadoJogo.socket.emit('criarSala', {
-                jogador: estadoJogo.jogador
-            });
+        function finalizarJogo() {
+            alert(`Parabéns! Você completou o jogo com ${estadoJogo.jogador.pontuacao} pontos!`);
+            mostrarTela(telaInicial);
+            resetarJogo();
         }
 
-        function entrarSala() {
-            const salaId = document.getElementById('input-id-sala').value.toUpperCase();
-            if (!salaId || salaId.length !== 6) {
-                alert('Digite um ID de sala válido (6 caracteres)');
-                return;
-            }
-
-            if (!estadoJogo.jogador.id) {
-                estadoJogo.jogador.id = 'jogador_' + Date.now();
-            }
-            
-            estadoJogo.socket.emit('entrarSala', {
-                salaId: salaId,
-                jogador: estadoJogo.jogador
-            });
-        }
-
-        function atualizarTelaSala() {
-            if (!estadoJogo.sala) return;
-
-            document.getElementById('sala-id').textContent = estadoJogo.sala.id;
-            document.getElementById('contador-jogadores').textContent = estadoJogo.sala.jogadores.length;
-            document.getElementById('status-sala').textContent = 
-                estadoJogo.sala.estado === 'aguardando' ? 'Aguardando jogadores...' : 'Jogo em andamento';
-            
-            const jogadoresContainer = document.getElementById('jogadores-sala');
-            jogadoresContainer.innerHTML = '';
-            
-            estadoJogo.sala.jogadores.forEach(jogador => {
-                const divJogador = document.createElement('div');
-                divJogador.className = 'jogador-item';
-                
-                if (jogador.id === estadoJogo.sala.dono) {
-                    divJogador.classList.add('dono');
-                    divJogador.innerHTML = `👑 ${jogador.nome} (Dono)`;
-                } else if (jogador.id === estadoJogo.jogador.id) {
-                    divJogador.classList.add('eu');
-                    divJogador.innerHTML = `⭐ ${jogador.nome} (Você)`;
-                } else {
-                    divJogador.textContent = jogador.nome;
-                }
-                
-                jogadoresContainer.appendChild(divJogador);
-            });
-            
-            const btnIniciar = document.getElementById('btn-iniciar-jogo');
-            if (estadoJogo.sala.dono === estadoJogo.jogador.id) {
-                btnIniciar.style.display = 'block';
-                btnIniciar.disabled = estadoJogo.sala.jogadores.length < 2;
-            } else {
-                btnIniciar.style.display = 'none';
-            }
-
-            document.getElementById('aguardando-inicio').style.display = 
-                estadoJogo.sala.estado === 'aguardando' ? 'block' : 'none';
-        }
-
-        document.getElementById('btn-iniciar-jogo').addEventListener('click', () => {
-            estadoJogo.socket.emit('iniciarJogo', {
-                salaId: estadoJogo.sala.id,
-                jogadorId: estadoJogo.jogador.id
-            });
-        });
-
-        function adicionarMensagemSistema(mensagem) {
-            const mensagemElemento = document.createElement('div');
-            mensagemElemento.className = 'mensagem-sistema';
-            mensagemElemento.textContent = mensagem;
-            
-            const salaContainer = document.querySelector('#tela-sala .sala-container');
-            salaContainer.appendChild(mensagemElemento);
-            
-            mensagemElemento.scrollIntoView({ behavior: 'smooth' });
-            
-            setTimeout(() => {
-                if (mensagemElemento.parentNode) {
-                    mensagemElemento.parentNode.removeChild(mensagemElemento);
-                }
-            }, 5000);
-        }
-
-        // Perguntas Multiplayer (permanecem iguais)
-        function carregarPerguntaMultiplayer(pergunta, rodada, totalRodadas) {
-            document.getElementById('texto-pergunta-multi').textContent = `Rodada ${rodada}/${totalRodadas}: ${pergunta.pergunta}`;
-            
-            const opcoesContainer = document.getElementById('opcoes-container-multi');
-            opcoesContainer.innerHTML = '';
-            
-            pergunta.opcoes.forEach(opcao => {
-                const divOpcao = document.createElement('div');
-                divOpcao.className = 'opcao';
-                divOpcao.textContent = opcao;
-                divOpcao.addEventListener('click', () => responderPerguntaMultiplayer(opcao, divOpcao));
-                opcoesContainer.appendChild(divOpcao);
-            });
-            
-            document.getElementById('tempo-restante-multi').textContent = '15';
-            document.getElementById('barra-progresso-multi').style.width = '100%';
-            
-            atualizarRankingSala();
-        }
-
-        function responderPerguntaMultiplayer(resposta, elemento) {
-            document.querySelectorAll('#opcoes-container-multi .opcao').forEach(opcao => {
-                opcao.style.pointerEvents = 'none';
-            });
-            
-            elemento.classList.add('selecionada');
-            
-            estadoJogo.socket.emit('responderPergunta', {
-                salaId: estadoJogo.sala.id,
-                jogadorId: estadoJogo.jogador.id,
-                resposta: resposta
-            });
-        }
-
-        function atualizarRankingSala() {
-            if (!estadoJogo.sala) return;
-
-            const rankingContainer = document.getElementById('ranking-sala');
-            rankingContainer.innerHTML = '<h3>Ranking da Sala</h3>';
-            
-            const jogadoresOrdenados = [...estadoJogo.sala.jogadores].sort((a, b) => 
-                (b.pontuacao || 0) - (a.pontuacao || 0)
-            );
-            
-            jogadoresOrdenados.forEach((jogador, index) => {
-                const divRanking = document.createElement('div');
-                divRanking.className = 'ranking-sala-item';
-                
-                if (jogador.id === estadoJogo.jogador.id) {
-                    divRanking.classList.add('destaque');
-                }
-                
-                const respondeu = estadoJogo.sala.respostas && 
-                                 estadoJogo.sala.respostas.has(jogador.id);
-                
-                divRanking.innerHTML = `
-                    <div>
-                        <strong>${index + 1}º ${jogador.nome}</strong>
-                        ${jogador.id === estadoJogo.jogador.id ? '(Você)' : ''}
-                        ${respondeu ? '✅' : '⏳'}
-                    </div>
-                    <div>${jogador.pontuacao || 0} pontos</div>
-                `;
-                
-                rankingContainer.appendChild(divRanking);
-            });
-        }
-
-        function mostrarResultadoMultiplayer(dados) {
-            const meuResultado = dados.resultados.find(r => 
-                r.jogador.id === estadoJogo.jogador.id
-            );
-            
-            document.getElementById('resultado-texto-multi').textContent = 
-                meuResultado.acertou ? 'Resposta Correta!' : 'Resposta Incorreta!';
-            document.getElementById('resultado-texto-multi').className = 
-                meuResultado.acertou ? 'resultado-acerto' : 'resultado-erro';
-            document.getElementById('pontuacao-rodada').textContent = meuResultado.pontos;
-            
-            const rankingContainer = document.getElementById('ranking-rodada');
-            rankingContainer.innerHTML = '';
-            
-            dados.resultados.forEach((resultado, index) => {
-                const divRanking = document.createElement('div');
-                divRanking.className = 'ranking-sala-item';
-                
-                if (resultado.jogador.id === estadoJogo.jogador.id) {
-                    divRanking.classList.add('destaque');
-                }
-                
-                divRanking.innerHTML = `
-                    <div>
-                        <strong>${index + 1}º ${resultado.jogador.nome}</strong>
-                        ${resultado.jogador.id === estadoJogo.jogador.id ? '(Você)' : ''}
-                    </div>
-                    <div>
-                        <div>+${resultado.pontos} pts (Total: ${resultado.pontosTotais})</div>
-                        <div class="progresso-jogador" style="width: ${(resultado.pontosTotais / (dados.rodada * 15)) * 100}%"></div>
-                    </div>
-                `;
-                
-                rankingContainer.appendChild(divRanking);
-            });
-            
-            mostrarTela(telaResultadoMultiplayer);
-            
-            if (dados.rodada === dados.totalRodadas) {
-                setTimeout(() => {
-                    mostrarTela(telaSala);
-                }, 5000);
-            }
-        }
-
-        // FUNÇÃO COMPLETADA: Carregar ranking
+        // Carregar ranking
         function carregarRanking() {
             const ranking = [
                 { nome: "Maria", pontuacao: 150 },
@@ -682,13 +764,13 @@
             });
         }
 
-        // FUNÇÃO COMPLETADA: Carregar álbum
+        // Carregar álbum
         function carregarAlbum() {
             const albumContainer = document.getElementById('album-container');
             albumContainer.innerHTML = '';
             
             if (estadoJogo.jogador.figurinhas.length === 0) {
-                albumContainer.innerHTML = '<div class="vazia">Você ainda não possui figurinhas. Jogue no modo Solo para coletar!</div>';
+                albumContainer.innerHTML = '<div class="vazia">Você ainda não possui figurinhas. Jogue para coletar!</div>';
                 return;
             }
             
@@ -704,7 +786,7 @@
             });
         }
 
-        // FUNÇÃO COMPLETADA: Resetar jogo
+        // Resetar jogo
         function resetarJogo() {
             clearInterval(estadoJogo.intervalo);
             estadoJogo.modo = null;
@@ -713,25 +795,22 @@
             estadoJogo.perguntasRespondidas = [];
             estadoJogo.tempoRestante = 30;
             estadoJogo.opcaoSelecionada = null;
-            estadoJogo.sala = null;
+            estadoJogo.perguntaNumero = 0;
         }
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
+        // Salvar dados no localStorage
+        function salvarDados() {
+            localStorage.setItem('quizBiblicoJogador', JSON.stringify(estadoJogo.jogador));
+        }
+
+        // Carregar dados do localStorage
+        function carregarDados() {
             const dadosSalvos = localStorage.getItem('quizBiblicoJogador');
             if (dadosSalvos) {
                 const dados = JSON.parse(dadosSalvos);
                 estadoJogo.jogador = { ...estadoJogo.jogador, ...dados };
             }
-            
-            if (!estadoJogo.jogador.id) {
-                estadoJogo.jogador.id = 'jogador_' + Date.now();
-            }
-            
-            setInterval(() => {
-                localStorage.setItem('quizBiblicoJogador', JSON.stringify(estadoJogo.jogador));
-            }, 5000);
-        });
+        }
 
         // Filtro de categorias no álbum
         document.querySelectorAll('.filtro-btn').forEach(btn => {
@@ -746,17 +825,27 @@
             const cards = document.querySelectorAll('.figurinha-card');
             cards.forEach(card => {
                 if (categoria === 'todas' || card.classList.contains(categoria)) {
-                    card.style.display = 'block';
+                    card.style.display = 'inline-block';
                 } else {
                     card.style.display = 'none';
                 }
             });
         }
 
-        // Adicionar listener para próxima pergunta (que estava faltando)
+        // Próxima pergunta
         document.getElementById('btn-proxima-pergunta').addEventListener('click', () => {
             carregarPergunta();
             mostrarTela(telaPergunta);
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDados();
+            
+            if (!estadoJogo.jogador.id) {
+                estadoJogo.jogador.id = 'jogador_' + Date.now();
+                salvarDados();
+            }
         });
     </script>
 </body>
